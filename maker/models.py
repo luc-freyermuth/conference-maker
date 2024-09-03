@@ -1,3 +1,10 @@
 from django.db import models
 
-# Create your models here.
+class ConferenceModule(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    file = models.FileField(upload_to="uploads/modules")
+    image = models.ImageField(upload_to="uploads/images")
+
+    def __unicode__(self):
+        return self.title; 

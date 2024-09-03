@@ -1,8 +1,10 @@
 import win32com.client
 import os
-from datetime import datetime
+import pythoncom
+
 
 def merge_presentations(presentations, path):
+  pythoncom.CoInitialize()
   ppt_instance = win32com.client.Dispatch('PowerPoint.Application')
   prs = ppt_instance.Presentations.open(os.path.abspath(presentations[0]), True, False, False)
 

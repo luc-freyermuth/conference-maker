@@ -6,13 +6,23 @@
     <title>Document</title>
 </head>
 <body>
+    {% load static %}
     <form method="POST" action="download">
+        {% csrf_token %}
         <select name="val" multiple>
-            {% for opt in options %}
-                <option value="{{opt}}">{{opt}}</option>
+            {% for module in modules %}
+                <option value="{{module.id}}">{{ module.title }}</option>
             {% endfor %}
         </select>
         <button>Download</button>
     </form>
+
+    <h1>Modules !</h1>
+    {% for module in modules %}
+        <div>
+            <img src="{% static module.image.url %}">
+            {{ module.title }}
+        </div>
+    {% endfor %}
 </body>
 </html>
