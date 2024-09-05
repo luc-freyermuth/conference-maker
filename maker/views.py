@@ -8,6 +8,7 @@ from datetime import datetime
 from .models import ConferenceModule
 from django.views.decorators.http import require_POST
 from django.template import loader
+import numpy as np
 
 # Create your views here.
 def index(request):
@@ -45,4 +46,7 @@ def download(request):
 def render_conference(conference):
     template = loader.get_template("maker/conference.html")
     modules =  [ConferenceModule.objects.get(id=id) for id in conference]
-    return template.render({ "modules": modules })
+    total_duration = np.sum([module.duration_minutes for module in modules])
+    return template.render({ "modules": modules, "stats": {
+        "duration_minutes": total_duration
+    } })

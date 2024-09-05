@@ -5,6 +5,7 @@ class ConferenceModule(models.Model):
     description = models.TextField()
     file = models.FileField(upload_to="uploads/modules")
     image = models.ImageField(upload_to="uploads/images")
+    duration_minutes = models.PositiveIntegerField()
 
     def __unicode__(self):
         return self.title; 
