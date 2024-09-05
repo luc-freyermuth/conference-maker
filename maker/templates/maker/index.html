@@ -1,27 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"
+        integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Conference Maker</title>
 </head>
-<body>
-    <form method="POST" action="download">
-        {% csrf_token %}
-        <select name="val" multiple>
-            {% for module in modules %}
-                <option value="{{module.id}}">{{ module.title }}</option>
-            {% endfor %}
-        </select>
-        <button>Download</button>
-    </form>
 
-    <h1>Modules !</h1>
-    {% for module in modules %}
-        <div>
-            <img src="{{ module.image.url }}">
-            {{ module.title }}
+<body class="h-full">
+    <div class="flex flex-col h-full">
+        <div class="flex-1">
+            <div class="flex flex-row justify-between">
+                <h1>Votre conférence !</h1>
+                <div class="flex flex-row gap-2">
+                    <form action="download" method="POST" hx-disable>
+                        {% csrf_token %}
+                        <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-post="download">Télécharger</button>
+                    </form>
+                    <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-post="reset"
+                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-target="#conference"
+                        hx-swap="innerHTML">Recommencer</button>
+                </div>
+            </div>
+
+            <!-- <form method="POST" action="download">
+                
+                <select name="val" multiple>
+                    {% for module in modules %}
+                        <option value="{{module.id}}">{{ module.title }}</option>
+                    {% endfor %}
+                </select>
+                <button>Download</button>
+            </form> -->
+            <div id="conference">
+                {% include "maker/conference.html" with items=items %}
+            </div>
         </div>
-    {% endfor %}
+
+
+        <div class="border-t-2 border-slate-200">
+            <h1>Modules !</h1>
+            <div class=" flex flex-row gap-4">
+                {% for module in modules %}
+                <div class="p-3 flex flex-col items-center cursor-pointer hover:bg-slate-100 rounded"
+                    hx-post="add-module/{{ module.id }}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    hx-target="#conference" hx-swap="innerHTML">
+                    <img class="max-w-[250px]" src="{{ module.image.url }}">
+                    {{ module.title }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 </body>
+
 </html>
