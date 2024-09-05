@@ -15,7 +15,7 @@ def index(request):
     modules = ConferenceModule.objects.all()
     return render(request, "maker/index.html", context={
         "modules": modules,
-        "items":request.session.get("conference", [])
+        "conference": render_conference(request.session.get("conference", []))
     })
 
 @require_POST
@@ -23,14 +23,13 @@ def add_module(request, module_id):
     conference = request.session.get("conference", [])
     conference.append(module_id)
     request.session["conference"] = conference
-    return render(request, "maker/conference.html", context={
-        "items": conference
-    })
+    return HttpResponse(render_conference(conference))
 
 @require_POST
 def reset(request):
-    request.session["conference"] = []
-    return HttpResponse(render_conference([]))
+    conference = []
+    request.session["conference"] = conference
+    return HttpResponse(render_conference(conference))
 
 def download(request):
     shows = request.session.get("conference", [])
@@ -45,4 +44,5 @@ def download(request):
 
 def render_conference(conference):
     template = loader.get_template("maker/conference.html")
-    return template.render({ "items": conference })
+    modules =  [ConferenceModule.objects.get(id=id) for id in conference]
+    return template.render({ "modules": modules })

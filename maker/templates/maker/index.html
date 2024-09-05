@@ -13,7 +13,7 @@
 
 <body class="h-full">
     <div class="flex flex-col h-full">
-        <div class="flex-1">
+        <div class="flex-1 min-h-0 overflow-hidden flex flex-col">
             <div class="flex flex-row justify-between">
                 <h1>Votre conférence !</h1>
                 <div class="flex flex-row gap-2">
@@ -27,17 +27,8 @@
                 </div>
             </div>
 
-            <!-- <form method="POST" action="download">
-                
-                <select name="val" multiple>
-                    {% for module in modules %}
-                        <option value="{{module.id}}">{{ module.title }}</option>
-                    {% endfor %}
-                </select>
-                <button>Download</button>
-            </form> -->
-            <div id="conference">
-                {% include "maker/conference.html" with items=items %}
+            <div id="conference" class="flex-1 min-h-0">
+                {{ conference }}
             </div>
         </div>
 
