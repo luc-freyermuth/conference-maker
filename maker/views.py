@@ -5,10 +5,12 @@ from django.http import Http404
 from django.template import loader
 from .win32_powerpoint_builder import merge_presentations
 from datetime import datetime
-from .models import ConferenceModule
+from .models import ConferenceModule, ConferenceModuleTag
 from django.views.decorators.http import require_POST
 from django.template import loader
 import numpy as np
+from itertools import groupby
+import math
 
 # Create your views here.
 def index(request):
@@ -45,8 +47,20 @@ def download(request):
 
 def render_conference(conference):
     template = loader.get_template("maker/conference.html")
-    modules =  [ConferenceModule.objects.get(id=id) for id in conference]
+    modules = [ConferenceModule.objects.get(id=id) for id in conference]
+    modules_data = [
+        {
+            "image_url": module.image.url,
+            "title": module.title,
+            "description": module.description,
+            "duration_minutes": module.duration_minutes,
+            "tags_categories": [ { "category": k, "tags_details": list(v) } for k, v in groupby([{ "tag": cm.tag, "importance": math.floor(cm.tag_category_importance * 100) } for cm in ConferenceModuleTag.objects.filter(conference_module=module.id).select_related('tag', 'tag__category')], lambda t:t["tag"].category.name) ]
+        } for module in modules
+    ]
     total_duration = np.sum([module.duration_minutes for module in modules])
-    return template.render({ "modules": modules, "stats": {
+    return template.render({ "modules": modules_data, "stats": {
         "duration_minutes": total_duration
     } })
+
+# gb = groupby([{ "tag": cm.tag, "importance": cm.tag_category_importance } for cm in ConferenceModuleTag.objects.all().select_related('tag', 'tag__category')], lambda t:t["tag"].category.name)
+# [ { "category":k, "tags_details":[val for val in v] } for k, v in groupby([{ "tag": cm.tag, "importance": cm.tag_category_importance } for cm in ConferenceModuleTag.objects.all().select_related('tag', 'tag__category')], lambda t:t["tag"].category.name) ]

@@ -2,14 +2,20 @@
     <div class="flex flex-col gap-2 overflow-y-auto flex-1">
         {% for module in modules %}
             <div class="w-full flex flex-row gap-2 p-3 bg-slate-100 rounded">
-                <img class="max-w-[150px]" src="{{ module.image.url }}">
+                <img class="max-w-[150px]" src="{{ module.image_url }}">
                 <div class="flex flex-col">
                     <p class="font-semibold">{{ module.title }}</p>
                     <p class="text-slate-500">{{ module.description }}</p>
                 </div>
-                <div class="flex flex-col items-end flex-1">
-                    <p>{{module.duration_minutes}} minutes</p>
-                    <p>{{ module }}</p>
+                <div class="flex flex-col items-end flex-1 justify-between">
+                    <div>
+                        <p>{{ module.duration_minutes }} minutes</p>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        {% for tags_category in module.tags_categories %}
+                            <p><span class="font-semibold">{{ tags_category.category }}</span> : {% for tag_details in tags_category.tags_details %} {{ tag_details.tag.name }} ({{ tag_details.importance }}%) {% endfor %}</p>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         {% endfor %}
