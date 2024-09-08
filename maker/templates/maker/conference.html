@@ -22,5 +22,31 @@
     </div>
     <div class="flex-1 text-right">
         {{ stats.duration_minutes }} minutes
+
+        <div style="width: 200px;" hx-preserve id="charto"><canvas id="chart"></canvas></div>
+        <script>
+            var charto;
+            if (!charto) {
+                charto = new Chart(
+                    document.getElementById('chart'),
+                    {
+                    type: 'pie',
+                    data: {
+                        datasets: [{
+                            data: [0.7,'{{ stats.chart }}']
+                        }],
+                        labels: [
+                            'Comprendre',
+                            'Agir'
+                        ]
+                    }
+                    }
+                );
+            }
+            charto.data.datasets =  [{
+                data: [0.7,'{{ stats.chart }}']
+            }];
+            charto.update('none');
+        </script>
     </div>    
 </div>

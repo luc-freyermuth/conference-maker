@@ -11,6 +11,7 @@ from django.template import loader
 import numpy as np
 from itertools import groupby
 import math
+import random
 
 # Create your views here.
 def index(request):
@@ -59,8 +60,6 @@ def render_conference(conference):
     ]
     total_duration = np.sum([module.duration_minutes for module in modules])
     return template.render({ "modules": modules_data, "stats": {
-        "duration_minutes": total_duration
+        "duration_minutes": total_duration,
+        "chart": random.random()
     } })
-
-# gb = groupby([{ "tag": cm.tag, "importance": cm.tag_category_importance } for cm in ConferenceModuleTag.objects.all().select_related('tag', 'tag__category')], lambda t:t["tag"].category.name)
-# [ { "category":k, "tags_details":[val for val in v] } for k, v in groupby([{ "tag": cm.tag, "importance": cm.tag_category_importance } for cm in ConferenceModuleTag.objects.all().select_related('tag', 'tag__category')], lambda t:t["tag"].category.name) ]
