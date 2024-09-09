@@ -59,10 +59,12 @@ def render_conference(conference):
         } for module in modules
     ]
     total_duration = np.sum([module.duration_minutes for module in modules])
-    grp = groupby([{ "tag": cm.tag, "duration_minutes": cm.tag_category_importance * cm.conference_module.duration_minutes } for cm in ConferenceModuleTag.objects.order_by('tag__category', 'tag__name').filter(conference_module__in=[module.id for module in modules]).select_related('tag', 'tag__category', 'conference_module')], lambda t:t["tag"].category.name)
-    categories_tags_repartition = [ { "category": k, "tags_details": [{"k": ka, "v": list(va)} for ka, va in groupby(v, lambda item: item["tag"].name)] } for k, v in grp ]
-    print(categories_tags_repartition)
+
+    conference_module_tags = ConferenceModuleTag.objects.order_by('tag__category', 'tag__name').filter(conference_module__in=[module.id for module in modules]).select_related('tag', 'tag__category', 'conference_module')
+    tags_grouped_by_category = groupby([{ "tag": cm.tag, "duration_minutes": cm.tag_category_importance * cm.conference_module.duration_minutes } for cm in conference_module_tags], lambda t:t["tag"].category.name)
+    categories_tags_repartition = [ { "category": category, "tags": [{"tag": tag, "duration_minutes": np.sum([occ["duration_minutes"] for occ in tag_details])} for tag, tag_details in groupby(tags_details, lambda item: item["tag"].name)] } for category, tags_details in tags_grouped_by_category ]
+    
     return template.render({ "modules": modules_data, "stats": {
         "duration_minutes": total_duration,
-        "chart": random.random()
+        "categories_tags_repartition": categories_tags_repartition
     } })
