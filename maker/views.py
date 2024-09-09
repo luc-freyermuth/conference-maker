@@ -6,7 +6,7 @@ from django.template import loader
 from .win32_powerpoint_builder import merge_presentations
 from datetime import datetime
 from .models import ConferenceModule, ConferenceModuleTag
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.template import loader
 import numpy as np
 from itertools import groupby
@@ -19,7 +19,7 @@ def index(request):
     modules = ConferenceModule.objects.all()
     return render(request, "maker/index.html", context={
         "modules": modules,
-        "conference": render_conference(request.session.get("conference", []))
+        "conference": render_conference(request.session.get("conference", []), request)
     })
 
 @require_POST
@@ -27,13 +27,27 @@ def add_module(request, module_id):
     conference = request.session.get("conference", [])
     conference.append(module_id)
     request.session["conference"] = conference
-    return HttpResponse(render_conference(conference))
+    return HttpResponse(render_conference(conference, request))
+
+@require_POST
+def move_module(request, module_index, new_index):
+    conference = request.session.get("conference", [])
+    conference[module_index], conference[new_index] = conference[new_index], conference[module_index]
+    request.session["conference"] = conference
+    return HttpResponse(render_conference(conference, request))
+
+@require_http_methods(["DELETE"])
+def remove_module(request, module_index):
+    conference = request.session.get("conference", [])
+    conference.pop(module_index)
+    request.session["conference"] = conference
+    return HttpResponse(render_conference(conference, request))
 
 @require_POST
 def reset(request):
     conference = []
     request.session["conference"] = conference
-    return HttpResponse(render_conference(conference))
+    return HttpResponse(render_conference(conference, request))
 
 def download(request):
     shows = request.session.get("conference", [])
@@ -46,7 +60,7 @@ def download(request):
             return response
     raise Http404
 
-def render_conference(conference):
+def render_conference(conference, request):
     template = loader.get_template("maker/conference.html")
     modules = [ConferenceModule.objects.get(id=id) for id in conference]
     modules_data = [
@@ -55,8 +69,10 @@ def render_conference(conference):
             "title": module.title,
             "description": module.description,
             "duration_minutes": module.duration_minutes,
-            "tags_categories": [ { "category": k, "tags_details": list(v) } for k, v in groupby([{ "tag": cm.tag, "importance": math.floor(cm.tag_category_importance * 100) } for cm in ConferenceModuleTag.objects.order_by('tag__category').filter(conference_module=module.id).select_related('tag', 'tag__category')], lambda t:t["tag"].category.name) ]
-        } for module in modules
+            "tags_categories": [ { "category": k, "tags_details": list(v) } for k, v in groupby([{ "tag": cm.tag, "importance": math.floor(cm.tag_category_importance * 100) } for cm in ConferenceModuleTag.objects.order_by('tag__category').filter(conference_module=module.id).select_related('tag', 'tag__category')], lambda t:t["tag"].category.name) ],
+            "previous": idx -1,
+            "next": idx + 1
+        } for idx, module in enumerate(modules)
     ]
     total_duration = np.sum([module.duration_minutes for module in modules])
 
@@ -67,4 +83,4 @@ def render_conference(conference):
     return template.render({ "modules": modules_data, "stats": {
         "duration_minutes": total_duration,
         "categories_tags_repartition": categories_tags_repartition
-    } })
+    } }, request)

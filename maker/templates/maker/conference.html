@@ -3,13 +3,18 @@
         {% for module in modules %}
             <div class="w-full flex flex-row gap-2 p-3 bg-slate-100 rounded">
                 <img class="max-w-[150px]" src="{{ module.image_url }}">
-                <div class="flex flex-col">
-                    <p class="font-semibold">{{ module.title }}</p>
-                    <p class="text-slate-500">{{ module.description }}</p>
+                <div class="flex flex-col justify-between">
+                    <div>
+                        <p class="font-semibold">{{ module.title }}</p>
+                        <p class="text-slate-500">{{ module.description }}</p>
+                    </div>
+                    <p>{{ module.duration_minutes }} minutes</p>
                 </div>
                 <div class="flex flex-col items-end flex-1 justify-between">
-                    <div>
-                        <p>{{ module.duration_minutes }} minutes</p>
+                    <div hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-target="#conference" hx-swap="innerHTML">
+                        <button hx-post="move/{{forloop.counter0}}/{{module.previous}}">↑</button>
+                        <button hx-post="move/{{forloop.counter0}}/{{module.next}}">↓</button>
+                        <button hx-delete="module/{{forloop.counter0}}">❌</button>
                     </div>
                     <div class="flex flex-col items-end text-xs">
                         {% for tags_category in module.tags_categories %}
