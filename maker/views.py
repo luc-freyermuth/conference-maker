@@ -55,7 +55,7 @@ def render_conference(conference):
             "title": module.title,
             "description": module.description,
             "duration_minutes": module.duration_minutes,
-            "tags_categories": [ { "category": k, "tags_details": list(v) } for k, v in groupby([{ "tag": cm.tag, "importance": math.floor(cm.tag_category_importance * 100) } for cm in ConferenceModuleTag.objects.filter(conference_module=module.id).select_related('tag', 'tag__category')], lambda t:t["tag"].category.name) ]
+            "tags_categories": [ { "category": k, "tags_details": list(v) } for k, v in groupby([{ "tag": cm.tag, "importance": math.floor(cm.tag_category_importance * 100) } for cm in ConferenceModuleTag.objects.order_by('tag__category').filter(conference_module=module.id).select_related('tag', 'tag__category')], lambda t:t["tag"].category.name) ]
         } for module in modules
     ]
     total_duration = np.sum([module.duration_minutes for module in modules])

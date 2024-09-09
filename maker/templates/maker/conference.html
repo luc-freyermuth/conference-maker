@@ -11,7 +11,7 @@
                     <div>
                         <p>{{ module.duration_minutes }} minutes</p>
                     </div>
-                    <div class="flex flex-col items-end">
+                    <div class="flex flex-col items-end text-xs">
                         {% for tags_category in module.tags_categories %}
                             <p><span class="font-semibold">{{ tags_category.category }}</span> : {% for tag_details in tags_category.tags_details %} {{ tag_details.tag.name }} ({{ tag_details.importance }}%) {% endfor %}</p>
                         {% endfor %}
@@ -23,7 +23,7 @@
     <div class="flex-1 text-right">
         {{ stats.duration_minutes }} minutes
 
-        <div style="width: 200px;" hx-preserve id="charto"><canvas id="chart"></canvas></div>
+        <!-- <div style="width: 200px;" hx-preserve id="charto"><canvas id="chart"></canvas></div>
         <script>
             var charto;
             if (!charto) {
@@ -47,6 +47,6 @@
                 data: [0.7,'{{ stats.chart }}']
             }];
             charto.update('none');
-        </script>
+        </script> -->
     </div>    
 </div>
