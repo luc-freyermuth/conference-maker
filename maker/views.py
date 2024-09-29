@@ -11,11 +11,10 @@ from django.template import loader
 import numpy as np
 from itertools import groupby
 import math
-import random
+import json
 
 # Create your views here.
 def index(request):
-    print(request)
     modules = ConferenceModule.objects.all()
     return render(request, "maker/index.html", context={
         "modules": modules,
@@ -60,6 +59,20 @@ def download(request):
             return response
     raise Http404
 
+def export(request):
+    response = HttpResponse(serialize_conference(request.session.get("conference")))
+    response['Content-Disposition'] = 'attachment; filename=save.focon'
+    return response
+
+def request_import(request):
+    return render(request, "maker/import.html")
+
+@require_POST
+def do_import(request):
+    conference = deserialize_conference(request.FILES['file'].read())
+    request.session["conference"] = conference
+    return index(request)
+
 def render_conference(conference, request):
     template = loader.get_template("maker/conference.html")
     modules = [ConferenceModule.objects.get(id=id) for id in conference]
@@ -84,3 +97,16 @@ def render_conference(conference, request):
         "duration_minutes": total_duration,
         "categories_tags_repartition": categories_tags_repartition
     } }, request)
+
+
+def serialize_conference(conference):
+    if (conference is None):
+        conference = []
+    to_export = {
+        "modules": conference
+    }
+    return json.dumps(to_export)
+
+def deserialize_conference(serialized):
+    parsed = json.loads(serialized)
+    return parsed["modules"]

@@ -20,9 +20,12 @@
                 <div class="flex flex-row gap-2">
                     <form action="download" method="POST" hx-disable>
                         {% csrf_token %}
-                        <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500"
-                            hx-post="download">Télécharger</button>
+                        <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Télécharger</button>
                     </form>
+                    <form action="export" method="GET" hx-disable>
+                        <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Exporter</button>
+                    </form>
+                    <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-get="request-import" hx-swap="afterend">Importer</button>
                     <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-post="reset"
                         hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-target="#conference"
                         hx-swap="innerHTML">Recommencer</button>
