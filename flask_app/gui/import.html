@@ -1,0 +1,9 @@
+<dialog hx-on:htmx-load="this.showModal()">
+    <div class="p-4">
+        <form hx-post="import" hx-target="body" hx-encoding='multipart/form-data' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+            <input type="file" name="file" accept=".focon" />
+            <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Importer</button>
+        </form>
+    </div>
+    
+</dialog>
