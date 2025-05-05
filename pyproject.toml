@@ -1,0 +1,14 @@
+[project]
+name = "conference-maker"
+version = "0.1.0"
+description = "A conference making tools for the Shifters"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "flask>=3.1.0",
+    "numpy>=2.2.5",
+    "openpyxl>=3.1.5",
+    "pandas>=2.2.3",
+    "pywebview>=5.4",
+    "pywin32>=310",
+]
