@@ -6,6 +6,8 @@ import pythoncom
 def merge_presentations(presentations, path):
   pythoncom.CoInitialize()
   ppt_instance = win32com.client.Dispatch('PowerPoint.Application')
+  print("Will merge presentations :")
+  print(presentations, path)
   prs = ppt_instance.Presentations.open(os.path.abspath(presentations[0]), True, False, False)
 
   for i in range(1, len(presentations)):

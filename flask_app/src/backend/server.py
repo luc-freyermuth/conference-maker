@@ -6,24 +6,18 @@ from flask import Flask, render_template
 
 from modules import ConferenceModule, read_modules
 from win32_powerpoint_builder import merge_presentations
-from datetime import datetime
 import webview
+from config import get_assets_path, get_conference_and_modules_path, get_gui_path
 
-gui_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'gui')  # development path
 
-conference_and_modules_dir = 'C:\\Users\\Luc\\Nextcloud Shifters\\TTS\\50 - TTS Contenus\\7. Modules'
-
-if not os.path.exists(gui_dir):  # frozen executable path
-    gui_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gui')
-
-server = Flask(__name__, static_url_path='/static', static_folder=conference_and_modules_dir, template_folder=gui_dir)
+server = Flask(__name__, static_url_path='/static', static_folder=get_conference_and_modules_path(), template_folder=get_gui_path())
 server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1 
 
 @dataclass
 class Conference:
     modules: list[int]
 
-conference_modules: list[ConferenceModule] = read_modules(conference_and_modules_dir)
+conference_modules: list[ConferenceModule] = read_modules(get_conference_and_modules_path())
 conference = Conference(modules=[])
 
 @server.route('/')
@@ -31,18 +25,39 @@ def landing():
     """
     Render index.html. Initialization is performed asynchronously in initialize() function
     """
-    return render_template('index.html', modules=conference_modules, conference=render_conference(conference))
+    return render_template('index.html', modules=conference_modules, conference=render_conference(get_current_conference()))
 
 
 @server.route('/add-module/<int:module_id>', methods=['POST'])
 def add_module(module_id):
-    conference.modules.append(module_id)
-    return render_conference(conference)
+    c = get_current_conference()
+    c.modules.append(module_id)
+    set_current_conference(c)
+    return render_conference(c)
 
+@server.route('/move/<int:module_index>/<int:new_index>', methods=['POST'])
+def move_module(module_index, new_index):
+    c = get_current_conference()
+    c.modules[module_index], c.modules[new_index] = c.modules[new_index], c.modules[module_index]
+    set_current_conference(c)
+    return render_conference(c)
+
+@server.route('/module/<int:module_index>', methods=['DELETE'])
+def remove_module(module_index):
+    c = get_current_conference()
+    c.modules.pop(module_index)
+    set_current_conference(c)
+    return render_conference(c)
+
+@server.route('/reset', methods=['POST'])
+def reset():
+    new_conference = Conference(modules=[])
+    set_current_conference(new_conference)
+    return render_conference(new_conference)
 
 @server.route('/download', methods=['POST'])
 def download():
-    files = ["assets/base.slides.pptx"] + [next(m.slides_path for m in conference_modules if m.id == id) for id in conference.modules]
+    files = [os.path.join(get_assets_path(), "base.slides.pptx")] + [next(m.slides_path for m in conference_modules if m.id == id) for id in get_current_conference().modules]
 
     file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.pptx')
     if file and len(file) > 0:
@@ -50,9 +65,15 @@ def download():
 
     return ''
 
+def get_current_conference() -> Conference:
+    return conference
 
-def render_conference(conference: Conference):
-    modules: list[ConferenceModule] = [next(m for m in conference_modules if m.id == id) for id in conference.modules]
+def set_current_conference(c: Conference):
+    global conference
+    conference = c
+
+def render_conference(c: Conference):
+    modules: list[ConferenceModule] = [next(m for m in conference_modules if m.id == id) for id in c.modules]
     modules_data = [
         {
             "image_url": module.img_url,

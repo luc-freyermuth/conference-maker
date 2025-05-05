@@ -31,13 +31,14 @@ def read_modules(folder) -> list[ConferenceModule]:
 
         slides_file = next((x for x in module_files if x.endswith('slides.pptx')), None)
 
+        if general_df[1][3] != 'Caché':
+            modules.append(ConferenceModule(
+                id=int(module_subfolder[0:4]),
+                title=general_df[1][0],
+                description=general_df[1][1],
+                duration_minutes=general_df[1][2],
+                img_url=f'/static/modules/{module_subfolder}/{module_cover_file}' if module_cover_file is not None else '',
+                slides_path=f'{modules_folder}/{module_subfolder}/{slides_file}'
+            ))
 
-        modules.append(ConferenceModule(
-            id=int(module_subfolder[0:4]),
-            title=general_df[1][0],
-            description=general_df[1][1],
-            duration_minutes=general_df[1][2],
-            img_url=f'/static/modules/{module_subfolder}/{module_cover_file}' if module_cover_file is not None else '',
-            slides_path=f'{modules_folder}/{module_subfolder}/{slides_file}'
-        ))
     return modules
