@@ -12,3 +12,8 @@ dependencies = [
     "pywebview>=5.4",
     "pywin32>=310",
 ]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.13.0",
+]
