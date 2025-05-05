@@ -10,8 +10,16 @@ def merge_presentations(presentations, path):
   print(presentations, path)
   prs = ppt_instance.Presentations.open(os.path.abspath(presentations[0]), True, False, False)
 
+  r = prs.Slides.Count
+
   for i in range(1, len(presentations)):
+    prs_src =  ppt_instance.Presentations.open(os.path.abspath(presentations[i]), True, False, False)
     prs.Slides.InsertFromFile(os.path.abspath(presentations[i]), prs.Slides.Count)
+    for s in range(1, prs_src.Slides.Count):
+      r = r + 1
+      print(f'apply style of slide {s} from pres {os.path.abspath(presentations[i])}')
+      prs.Slides.Item(r).Design = prs_src.Slides.Item(s).Design
+    prs_src.Close()
 
   out = os.path.abspath(path)
 
