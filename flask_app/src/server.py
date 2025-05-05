@@ -1,3 +1,4 @@
+import json
 import os
 from dataclasses import dataclass
 import numpy as np
@@ -65,6 +66,26 @@ def download():
 
     return ''
 
+@server.route('/export', methods=['POST'])
+def export():
+    serialized = serialize_conference(get_current_conference())
+    file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.focon')
+    with open(file, "w") as text_file:
+        text_file.write(serialized)
+    return ''
+
+@server.route('/import', methods=['POST'])
+def import_conference():
+    files = webview.windows[0].create_file_dialog(webview.OPEN_DIALOG)
+    if files and len(files) > 0:
+        filename = files[0]
+        if isinstance(filename, bytes):
+            filename = filename.decode('utf-8')
+        with open(filename) as file:
+            set_current_conference(deserialize_conference(file.read()))
+    return render_conference(get_current_conference())
+
+
 def get_current_conference() -> Conference:
     return conference
 
@@ -96,40 +117,12 @@ def render_conference(c: Conference):
         "categories_tags_repartition": []
     })
 
-# @server.route('/choose/path', methods=['POST'])
-# def choose_path():
-#     """
-#     Invoke a folder selection dialog here
-#     :return:
-#     """
-#     dirs = webview.windows[0].create_file_dialog(webview.FOLDER_DIALOG)
-#     if dirs and len(dirs) > 0:
-#         directory = dirs[0]
-#         if isinstance(directory, bytes):
-#             directory = directory.decode('utf-8')
+def serialize_conference(conference: Conference) -> str:
+    to_export = {
+        "modules": conference.modules
+    }
+    return json.dumps(to_export)
 
-#         response = {'status': 'ok', 'directory': directory}
-#     else:
-#         response = {'status': 'cancel'}
-
-#     return jsonify(response)
-
-
-# @server.route('/fullscreen', methods=['POST'])
-# def fullscreen():
-#     webview.windows[0].toggle_fullscreen()
-#     return jsonify({})
-
-
-# @server.route('/open-url', methods=['POST'])
-# def open_url():
-#     url = request.json['url']
-#     webbrowser.open_new_tab(url)
-
-#     return jsonify({})
-
-
-# @server.route('/do/stuff', methods=['POST'])
-# def do_stuff():
-#     response = {'status': 'ok', 'result': 'oki'}
-#     return jsonify(response)
+def deserialize_conference(serialized: str) -> Conference:
+    parsed = json.loads(serialized)
+    return Conference(modules=parsed["modules"])

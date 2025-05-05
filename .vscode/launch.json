@@ -5,22 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Django",
-            "type": "debugpy",
-            "request": "launch",
-            "args": [
-                "runserver"
-            ],
-            "django": true,
-            "autoStartBrowser": false,
-            "program": "${workspaceFolder}\\manage.py"
-        },
-        {
             "name": "Python Debugger: Flask",
             "type": "debugpy",
             "request": "launch",
             "autoStartBrowser": false,
-            "program": "${workspaceFolder}\\flask_app\\src\\backend\\main.py"
+            "program": "${workspaceFolder}\\flask_app\\src\\main.py"
         }
     ]
 }
