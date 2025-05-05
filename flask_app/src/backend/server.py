@@ -5,6 +5,9 @@ import numpy as np
 from flask import Flask, render_template
 
 from modules import ConferenceModule, read_modules
+from win32_powerpoint_builder import merge_presentations
+from datetime import datetime
+import webview
 
 gui_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'gui')  # development path
 
@@ -21,7 +24,7 @@ class Conference:
     modules: list[int]
 
 conference_modules: list[ConferenceModule] = read_modules(conference_and_modules_dir)
-conference = Conference(modules=[1])
+conference = Conference(modules=[])
 
 @server.route('/')
 def landing():
@@ -35,6 +38,17 @@ def landing():
 def add_module(module_id):
     conference.modules.append(module_id)
     return render_conference(conference)
+
+
+@server.route('/download', methods=['POST'])
+def download():
+    files = ["assets/base.slides.pptx"] + [next(m.slides_path for m in conference_modules if m.id == id) for id in conference.modules]
+
+    file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.pptx')
+    if file and len(file) > 0:
+        merge_presentations(files, file)
+
+    return ''
 
 
 def render_conference(conference: Conference):
@@ -60,10 +74,6 @@ def render_conference(conference: Conference):
         "duration_minutes": total_duration,
         "categories_tags_repartition": []
     })
-
-
-def read_modules(folder) -> list[ConferenceModule]:
-    pass
 
 # @server.route('/choose/path', methods=['POST'])
 # def choose_path():

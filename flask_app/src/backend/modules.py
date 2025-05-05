@@ -11,6 +11,7 @@ class ConferenceModule:
     description: str
     duration_minutes: int
     img_url: str
+    slides_path: str
 
 def read_modules(folder) -> list[ConferenceModule]:
     modules_folder = os.path.join(folder, 'modules')
@@ -28,11 +29,15 @@ def read_modules(folder) -> list[ConferenceModule]:
 
         module_cover_file = next((x for x in module_files if x.endswith('cover.png')), None)
 
+        slides_file = next((x for x in module_files if x.endswith('slides.pptx')), None)
+
+
         modules.append(ConferenceModule(
             id=int(module_subfolder[0:4]),
             title=general_df[1][0],
             description=general_df[1][1],
             duration_minutes=general_df[1][2],
-            img_url=f'/static/modules/{module_subfolder}/{module_cover_file}' if module_cover_file is not None else ''
+            img_url=f'/static/modules/{module_subfolder}/{module_cover_file}' if module_cover_file is not None else '',
+            slides_path=f'{modules_folder}/{module_subfolder}/{slides_file}'
         ))
     return modules
