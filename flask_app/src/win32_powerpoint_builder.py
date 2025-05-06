@@ -17,7 +17,7 @@ def merge_presentations(presentations, path):
     prs.Slides.InsertFromFile(os.path.abspath(presentations[i]), prs.Slides.Count)
     for s in range(1, prs_src.Slides.Count):
       r = r + 1
-      print(f'apply style of slide {s} from pres {os.path.abspath(presentations[i])}')
+      print(f'apply style of slide {s} from pres {os.path.abspath(presentations[i])} to slide {r}')
       prs.Slides.Item(r).Design = prs_src.Slides.Item(s).Design
     prs_src.Close()
 
