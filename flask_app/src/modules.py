@@ -27,7 +27,7 @@ def read_modules(folder) -> list[ConferenceModule]:
         pd_xl_file = pd.ExcelFile(module_definition_file_path)
         general_df = pd.read_excel(pd_xl_file, 0, header=None)
 
-        module_cover_file = next((x for x in module_files if x.endswith('cover.png')), None)
+        module_cover_file = next((x for x in module_files if x.endswith('cover.png') or x.endswith('cover.jpg')), None)
 
         slides_file = next((x for x in module_files if x.endswith('slides.pptx')), None)
 
