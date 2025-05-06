@@ -35,12 +35,12 @@
 
         <div class="border-t-2 border-slate-200">
             <h1>Modules !</h1>
-            <div class=" flex flex-row gap-4">
+            <div class="flex flex-row gap-4 overflow-x-scroll">
                 {% for module in modules %}
                 <div class="p-3 flex flex-col items-center cursor-pointer hover:bg-slate-100 rounded"
                     hx-post="add-module/{{ module.id }}"
                     hx-target="#conference" hx-swap="innerHTML">
-                    <img class="max-w-[250px]" src="{{ module.img_url }}">
+                    <img class="max-w-[250px] object-contain" src="{{ module.img_url }}">
                     {{ module.title }}
                 </div>
                 {% endfor %}
