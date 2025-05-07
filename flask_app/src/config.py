@@ -9,14 +9,19 @@ gui_dir = os.path.join(os.path.dirname(__file__), '..', 'gui')  # development pa
 if not os.path.exists(gui_dir):  # frozen executable path
     gui_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gui')
 
-conference_and_modules_dir = 'C:\\Users\\Darckoune\\Nextcloud2\\TTS\\50 - TTS Contenus\\7. Modules'
 
-# if getattr(sys, 'frozen', False):
-#     print('frozen')
-#     application_path = os.path.dirname(sys.executable)
-# else:
-#     print('not frozen')
-#     application_path = os.path.dirname(__file__)
+if getattr(sys, 'frozen', False):
+    print('frozen')
+    application_path = os.path.dirname(sys.executable)
+else:
+    print('not frozen')
+    application_path = os.path.dirname(__file__)
+
+if not os.path.exists(os.path.join(application_path, 'modules')):
+    # todo: load from env file
+    conference_and_modules_dir = 'C:\\Users\\Darckoune\\Nextcloud2\\TTS\\50 - TTS Contenus\\7. Modules'
+else:
+    conference_and_modules_dir = application_path
 
 
 print('assets dir: ' + assets_dir)
