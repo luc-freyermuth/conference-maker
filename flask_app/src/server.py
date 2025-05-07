@@ -6,7 +6,7 @@ import numpy as np
 from flask import Flask, render_template, request
 
 from modules import ConferenceModule, read_modules
-from win32_powerpoint_builder import merge_presentations
+from win32_powerpoint_builder import create_conference_slides
 import webview
 from config import get_assets_path, get_conference_and_modules_path, get_gui_path
 
@@ -58,11 +58,11 @@ def reset():
 
 @server.route('/download', methods=['POST'])
 def download():
-    files = [os.path.join(get_assets_path(), "base.slides.pptx")] + [next(m.slides_path for m in conference_modules if m.id == id) for id in get_current_conference().modules]
+    modules = [next(m for m in conference_modules if m.id == id) for id in get_current_conference().modules]
 
     file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.pptx')
     if file and len(file) > 0:
-        merge_presentations(files, file)
+        create_conference_slides(modules, file)
 
     return ''
 
