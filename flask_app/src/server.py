@@ -8,7 +8,7 @@ from flask import Flask, render_template, request
 from modules import ConferenceModule, read_modules
 from win32_powerpoint_builder import create_conference_slides
 import webview
-from config import get_assets_path, get_conference_and_modules_path, get_gui_path
+from config import get_conference_and_modules_path, get_gui_path
 
 
 server = Flask(__name__, static_url_path='/static', static_folder=get_conference_and_modules_path(), template_folder=get_gui_path())
