@@ -3,7 +3,7 @@ import os
 from dataclasses import dataclass
 import numpy as np
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 from modules import ConferenceModule, read_modules
 from win32_powerpoint_builder import merge_presentations
@@ -26,7 +26,7 @@ def landing():
     """
     Render index.html. Initialization is performed asynchronously in initialize() function
     """
-    return render_template('index.html', modules=conference_modules, conference=render_conference(get_current_conference()))
+    return render_template('index.html', modules_list=render_modules_list(conference_modules), conference=render_conference(get_current_conference()))
 
 
 @server.route('/add-module/<int:module_id>', methods=['POST'])
@@ -85,6 +85,11 @@ def import_conference():
             set_current_conference(deserialize_conference(file.read()))
     return render_conference(get_current_conference())
 
+@server.route('/search-modules', methods=['GET'])
+def search_modules():
+    search = request.args.get("search")
+    return render_modules_list(conference_modules, search)
+
 
 def get_current_conference() -> Conference:
     return conference
@@ -92,6 +97,12 @@ def get_current_conference() -> Conference:
 def set_current_conference(c: Conference):
     global conference
     conference = c
+
+def render_modules_list(modules: list[ConferenceModule], search: str | None = None):
+    if search:
+        search = search.lower()
+        modules = filter(lambda module: search in module.title.lower() or search in module.description.lower(), conference_modules)
+    return render_template('modules_list.html', modules=modules)
 
 def render_conference(c: Conference):
     modules: list[ConferenceModule] = [next(m for m in conference_modules if m.id == id) for id in c.modules]

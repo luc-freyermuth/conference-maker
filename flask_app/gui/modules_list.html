@@ -1,0 +1,9 @@
+{% for module in modules %}
+    <div class="p-3 flex flex-col items-center cursor-pointer hover:bg-slate-100 rounded"
+        hx-post="add-module/{{ module.id }}"
+        hx-target="#conference" hx-swap="innerHTML">
+        <img class="max-w-[250px] object-contain" src="{{ module.img_url }}">
+        <div style="display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 2;overflow: hidden;" title="{{module.title}}"> {{ module.title }}</div>
+       
+    </div>
+{% endfor %}
