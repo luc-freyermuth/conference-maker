@@ -35,7 +35,7 @@
 
         <div class="border-t-2 border-slate-200">
             <h1>Modules !</h1>
-            <form hx-trigger="change, keyup from:input" hx-get="search-modules" hx-target="#modules-list" hx-swap="innerHTML">
+            <form hx-trigger="change, keyup from:input delay:500ms" hx-get="search-modules" hx-target="#modules-list" hx-swap="innerHTML">
                 <input name="search" placeholder="search..." />
             </form>
             <div id="modules-list" class="flex flex-row gap-4 overflow-x-scroll">
