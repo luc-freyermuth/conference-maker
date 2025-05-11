@@ -102,6 +102,8 @@ def render_modules_list(modules: list[ConferenceModule], search: str | None = No
     if search:
         search = search.lower()
         modules = filter(lambda module: search in module.title.lower() or search in module.description.lower(), conference_modules)
+    modules = list(modules)
+    modules.sort(key=lambda m: m.title)
     return render_template('modules_list.html', modules=modules)
 
 def render_conference(c: Conference):
@@ -130,7 +132,8 @@ def render_conference(c: Conference):
 
 def serialize_conference(conference: Conference) -> str:
     to_export = {
-        "modules": conference.modules
+        "modules": conference.modules,
+        "version": 1
     }
     return json.dumps(to_export)
 
