@@ -30,6 +30,8 @@
         {% endfor %}
     </div>
     <div class="flex-1 text-right">
+        {% include "conference_settings.html" %}
+
         {{ stats.duration_minutes }} minutes
 
         {% for category_tags_repartition in stats.categories_tags_repartition %}

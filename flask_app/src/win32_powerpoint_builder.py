@@ -6,18 +6,25 @@ import pythoncom
 from config import get_assets_path
 from modules import ConferenceModule
 
-def create_conference_slides(modules: list[ConferenceModule], save_path: str):
+def create_conference_slides(modules: list[ConferenceModule], title: str, subtitle: str, date: str, save_path: str):
   pythoncom.CoInitialize()
   ppt_instance = win32com.client.Dispatch('PowerPoint.Application')
   prs = ppt_instance.Presentations.open(os.path.join(get_assets_path(), "base.slides.pptx"), True, False, False)
+
+  prs.SectionProperties.AddSection(1, f'Couverture')
+  prs.Slides.InsertFromFile(os.path.join(get_assets_path(), "cover.slides.pptx"), prs.Slides.Count)
+  prs.Slides.Range(1).MoveToSectionStart(1)
 
   current_slide_target = prs.Slides.Count
 
   for i in range(len(modules)):
     prs_src =  ppt_instance.Presentations.open(os.path.abspath(modules[i].slides_path), True, False, False)
-    prs.SectionProperties.AddSection(i + 1, f'{modules[i].id} - {modules[i].title}')
+    prs.SectionProperties.AddSection(i + 2, f'{modules[i].id} - {modules[i].title}')
     prs.Slides.InsertFromFile(os.path.abspath(modules[i].slides_path), prs.Slides.Count)
-    prs.Slides.Range(range(current_slide_target + 1, current_slide_target + 1 + prs_src.Slides.Count)).MoveToSectionStart(i+1)
+    prs.Slides.Range(range(current_slide_target + 1, current_slide_target + 1 + prs_src.Slides.Count)).MoveToSectionStart(i+2)
+    prs.Slides(1).Shapes(prs.Slides(1).Shapes.Count).TextFrame.TextRange.Paragraphs(1).Text = title
+    prs.Slides(1).Shapes(prs.Slides(1).Shapes.Count).TextFrame.TextRange.Paragraphs(2).Text = subtitle
+    prs.Slides(1).Shapes(prs.Slides(1).Shapes.Count).TextFrame.TextRange.Paragraphs(4).Text = date
     
     for current_slide_src in range(1, prs_src.Slides.Count + 1):
       current_slide_target = current_slide_target + 1

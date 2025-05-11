@@ -1,0 +1,9 @@
+<form id="settings-form" hx-trigger="change, keyup from:input delay:500ms" hx-put="conference-settings"
+    hx-target="#settings-form" hx-swap="none">
+    
+    <label for="title">Titre de la conférence</label>
+    <textarea class="border-2 border-black" name="title">{{ conference_title }}</textarea> <br/>
+
+    <label for="title">Sous titre de la conférence</label>
+    <textarea class="border-2 border-black" name="subtitle">{{ conference_subtitle }}</textarea>
+</form>

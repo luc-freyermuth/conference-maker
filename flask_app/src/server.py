@@ -2,6 +2,7 @@ import json
 import os
 from dataclasses import dataclass
 import numpy as np
+from datetime import datetime
 
 from flask import Flask, render_template, request
 
@@ -16,10 +17,12 @@ server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
 
 @dataclass
 class Conference:
+    title: str
+    subtitle: str
     modules: list[int]
 
 conference_modules: list[ConferenceModule] = read_modules(get_conference_and_modules_path())
-conference = Conference(modules=[])
+conference = Conference(title='Ma conférence', subtitle='Accroche', modules=[])
 
 @server.route('/')
 def landing():
@@ -56,13 +59,28 @@ def reset():
     set_current_conference(new_conference)
     return render_conference(new_conference)
 
+@server.route('/conference-settings', methods=['PUT'])
+def set_conference_settings():
+    c = get_current_conference()
+    c.title = request.form.get("title")
+    c.subtitle = request.form.get("subtitle")
+    set_current_conference(c)
+    return render_template('conference_settings.html', conference_title=c.title, conference_subtitle=c.subtitle)
+
 @server.route('/download', methods=['POST'])
 def download():
-    modules = [next(m for m in conference_modules if m.id == id) for id in get_current_conference().modules]
+    c = get_current_conference()
+    modules = [next(m for m in conference_modules if m.id == id) for id in c.modules]
 
     file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.pptx')
     if file and len(file) > 0:
-        create_conference_slides(modules, file)
+        create_conference_slides(
+            modules, 
+            title=c.title, 
+            subtitle=c.subtitle, 
+            date=datetime.now().strftime("%d/%m/%Y"), 
+            save_path=file
+        )
 
     return ''
 
@@ -125,7 +143,7 @@ def render_conference(c: Conference):
     # conference_module_tags = ConferenceModuleTag.objects.order_by('tag__category', 'tag__name').filter(conference_module__in=[module.id for module in modules]).select_related('tag', 'tag__category', 'conference_module')
     # tags_grouped_by_category = groupby([{ "tag": cm.tag, "duration_minutes": cm.tag_category_importance * cm.conference_module.duration_minutes } for cm in conference_module_tags], lambda t:t["tag"].category.name)
     # categories_tags_repartition = [ { "category": category, "tags": [{"tag": tag, "duration_minutes": np.sum([occ["duration_minutes"] for occ in tag_details])} for tag, tag_details in groupby(tags_details, lambda item: item["tag"].name)] } for category, tags_details in tags_grouped_by_category ]
-    return render_template('conference.html', modules=modules_data, stats={
+    return render_template('conference.html', conference_title=c.title, conference_subtitle=c.subtitle, modules=modules_data, stats={
         "duration_minutes": total_duration,
         "categories_tags_repartition": []
     })
@@ -133,10 +151,16 @@ def render_conference(c: Conference):
 def serialize_conference(conference: Conference) -> str:
     to_export = {
         "modules": conference.modules,
+        "title": conference.title,
+        "subtitle": conference.subtitle,
         "version": 1
     }
     return json.dumps(to_export)
 
 def deserialize_conference(serialized: str) -> Conference:
     parsed = json.loads(serialized)
-    return Conference(modules=parsed["modules"])
+    return Conference(
+        modules=parsed["modules"], 
+        title=parsed["title"] if "title" in parsed else "", 
+        subtitle=parsed["subtitle"] if "subtitle" in parsed else ""
+    )
