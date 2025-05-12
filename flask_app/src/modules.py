@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 import os
 import pandas as pd
-import urllib.parse as urlparse
-import urllib.request as urlrequest
+
+@dataclass
+class ModuleTag:
+    category: str
+    tag: str
 
 @dataclass
 class ConferenceModule:
@@ -12,6 +15,8 @@ class ConferenceModule:
     duration_minutes: int
     img_url: str
     slides_path: str
+    tags: list[ModuleTag]
+
 
 def read_modules(folder) -> list[ConferenceModule]:
     modules_folder = os.path.join(folder, 'modules')
@@ -25,7 +30,8 @@ def read_modules(folder) -> list[ConferenceModule]:
         module_definition_file_path = os.path.join(module_path, module_definition_file)
 
         pd_xl_file = pd.ExcelFile(module_definition_file_path)
-        general_df = pd.read_excel(pd_xl_file, 0, header=None)
+        general_df = pd.read_excel(pd_xl_file, 'General', header=None)
+        tags_df = pd.read_excel(pd_xl_file, 'Etiquettes')
 
         module_cover_file = next((x for x in module_files if x.endswith('cover.png') or x.endswith('cover.jpg')), None)
 
@@ -38,7 +44,8 @@ def read_modules(folder) -> list[ConferenceModule]:
                 description=general_df[1][1],
                 duration_minutes=general_df[1][2],
                 img_url=f'/static/modules/{module_subfolder}/{module_cover_file}' if module_cover_file is not None else '',
-                slides_path=f'{modules_folder}/{module_subfolder}/{slides_file}'
+                slides_path=f'{modules_folder}/{module_subfolder}/{slides_file}',
+                tags=[ModuleTag(category, tag) for category in tags_df.columns for tag in tags_df[category].tolist() if isinstance(tag, str)]
             ))
 
     return modules
