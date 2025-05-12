@@ -1,3 +1,4 @@
+from itertools import groupby
 import json
 import os
 from dataclasses import dataclass
@@ -132,8 +133,7 @@ def render_conference(c: Conference):
             "title": module.title,
             "description": module.description,
             "duration_minutes": module.duration_minutes,
-            # "tags_categories": [ { "category": k, "tags_details": list(v) } for k, v in groupby([{ "tag": cm.tag, "importance": math.floor(cm.tag_category_importance * 100) } for cm in ConferenceModuleTag.objects.order_by('tag__category').filter(conference_module=module.id).select_related('tag', 'tag__category')], lambda t:t["tag"].category.name) ],
-            "tags_categories": [],
+            "tags_categories": [ { "category": k, "tags": [tag.tag for tag in v] } for k, v in groupby(module.tags, lambda t:t.category) ],
             "previous": idx -1,
             "next": idx + 1
         } for idx, module in enumerate(modules)
