@@ -1,13 +1,12 @@
 from itertools import groupby
 import json
-import os
 from dataclasses import dataclass
 import numpy as np
 from datetime import datetime
 
 from flask import Flask, render_template, request, send_from_directory
 
-from modules import ConferenceModule, read_modules
+from modules import ConferenceModule, read_modules, get_all_tags
 from win32_powerpoint_builder import create_conference_slides
 import webview
 from config import get_conference_and_modules_path, get_gui_path, get_assets_path
@@ -30,7 +29,10 @@ def landing():
     """
     Render index.html. Initialization is performed asynchronously in initialize() function
     """
-    return render_template('index.html', modules_list=render_modules_list(conference_modules), conference=render_conference(get_current_conference()))
+    return render_template('index.html', 
+                           modules_list=render_modules_list(conference_modules), 
+                           conference=render_conference(get_current_conference()), 
+                           tags_categories=get_all_tags(conference_modules))
 
 
 @server.route('/add-module/<int:module_id>', methods=['POST'])

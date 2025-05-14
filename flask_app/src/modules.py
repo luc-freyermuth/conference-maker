@@ -1,11 +1,17 @@
 from dataclasses import dataclass
 import os
 import pandas as pd
+from itertools import groupby
 
 @dataclass
 class ModuleTag:
     category: str
     tag: str
+
+@dataclass
+class TagCategory:
+    name: str
+    tags: list[ModuleTag]
 
 @dataclass
 class ConferenceModule:
@@ -49,3 +55,9 @@ def read_modules(folder) -> list[ConferenceModule]:
             ))
 
     return modules
+
+def get_all_tags(modules: list[ConferenceModule]) -> list[TagCategory]:
+    tags: list[ModuleTag] = []
+    for module in modules:
+        tags = tags + module.tags
+    return  [TagCategory(name=k, tags=list(v)) for k, v in groupby(module.tags, lambda t:t.category)]

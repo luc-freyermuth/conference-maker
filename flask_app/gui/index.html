@@ -34,6 +34,13 @@
             <h1>Modules !</h1>
             <form hx-trigger="change, keyup from:input delay:500ms" hx-get="search-modules" hx-target="#modules-list" hx-swap="innerHTML">
                 <input name="search" placeholder="search..." />
+                {% for tag_category in tags_categories %}
+                    <select name="{{ tag_category.name }}">
+                        {% for tag in tag_category.tags %}
+                            <option value="{{tag.tag}}">{{ tag.tag }}</option>
+                        {% endfor %}
+                    </select>
+                {% endfor %}
             </form>
             <div id="modules-list" class="flex flex-row gap-4 overflow-x-scroll">
                 {{ modules_list|safe }}
