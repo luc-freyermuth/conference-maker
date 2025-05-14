@@ -19,7 +19,7 @@ else:
 
 if not os.path.exists(os.path.join(application_path, 'modules')):
     # todo: load from env file
-    conference_and_modules_dir = 'C:\\Users\\Darckoune\\Nextcloud2\\TTS\\50 - TTS Contenus\\7. Modules'
+    conference_and_modules_dir = 'C:\\Users\\Luc\\Nextcloud Shifters\\TTS\\50 - TTS Contenus\\7. Modules'
 else:
     conference_and_modules_dir = application_path
 

@@ -5,12 +5,12 @@ from dataclasses import dataclass
 import numpy as np
 from datetime import datetime
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 
 from modules import ConferenceModule, read_modules
 from win32_powerpoint_builder import create_conference_slides
 import webview
-from config import get_conference_and_modules_path, get_gui_path
+from config import get_conference_and_modules_path, get_gui_path, get_assets_path
 
 
 server = Flask(__name__, static_url_path='/static', static_folder=get_conference_and_modules_path(), template_folder=get_gui_path())
@@ -164,3 +164,8 @@ def deserialize_conference(serialized: str) -> Conference:
         title=parsed["title"] if "title" in parsed else "", 
         subtitle=parsed["subtitle"] if "subtitle" in parsed else ""
     )
+
+
+@server.route('/assets/<path:filename>')
+def custom_static(filename):
+    return send_from_directory(get_assets_path(), filename)
