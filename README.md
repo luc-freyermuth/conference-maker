@@ -1,19 +1,28 @@
 # conference-maker
 
-Run in dev :
+## Run in dev :
+
+#### Create .env file
 
 ```
-uv run .\flask_app\src\main.py
+cp template.env .env
 ```
 
-Build exe :
+
+#### Run using uv
+
+```
+uv run --env-file .env .\flask_app\src\main.py
+```
+
+## Build exe :
 
 ```sh
 # for release
 uv run python -m PyInstaller conference_builder.spec
 ```
 
-Command used to generate spec file :
+#### Command used to generate spec file :
 
 ```sh
 # for release

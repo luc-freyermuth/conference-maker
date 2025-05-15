@@ -17,11 +17,12 @@ else:
     print('not frozen')
     application_path = os.path.dirname(__file__)
 
-if not os.path.exists(os.path.join(application_path, 'modules')):
-    # todo: load from env file
-    conference_and_modules_dir = 'C:\\Users\\Luc\\Nextcloud Shifters\\TTS\\50 - TTS Contenus\\7. Modules'
-else:
+if os.path.exists(os.path.join(application_path, 'modules')):
     conference_and_modules_dir = application_path
+elif os.environ.get('CONFERENCE_AND_MODULES_PATH') is not None:
+    conference_and_modules_dir = os.environ.get('CONFERENCE_AND_MODULES_PATH')
+else:
+    raise RuntimeError('Enable to find conference and modules path')
 
 
 print('assets dir: ' + assets_dir)
