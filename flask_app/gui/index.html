@@ -32,14 +32,21 @@
 
         <div class="border-t-2 border-slate-200">
             <h1>Modules !</h1>
-            <form hx-trigger="change, keyup from:input delay:500ms" hx-get="search-modules" hx-target="#modules-list" hx-swap="innerHTML">
-                <input name="search" placeholder="search..." />
+            <form hx-trigger="change, keyup from:input delay:500ms" hx-get="search-modules" hx-target="#modules-list" hx-swap="innerHTML" class="flex gap-6 items-start">
+                <div class="inline-flex flex-col">
+                    <label for="search">Recherche</label>
+                    <input name="search" placeholder="search..." />
+                </div>
                 {% for tag_category in tags_categories %}
-                    <select name="{{ tag_category.name }}">
-                        {% for tag in tag_category.tags %}
-                            <option value="{{tag.tag}}">{{ tag.tag }}</option>
-                        {% endfor %}
-                    </select>
+                    <div class="inline-flex flex-col">
+                        <label for="category__{{ tag_category.name }}">{{ tag_category.name }}</label>
+                        <select name="category__{{ tag_category.name }}">
+                            <option value="">--</option>
+                            {% for tag in tag_category.tags %}
+                                <option value="{{tag.tag}}">{{ tag.tag }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 {% endfor %}
             </form>
             <div id="modules-list" class="flex flex-row gap-4 overflow-x-scroll">

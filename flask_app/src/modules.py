@@ -60,4 +60,9 @@ def get_all_tags(modules: list[ConferenceModule]) -> list[TagCategory]:
     tags: list[ModuleTag] = []
     for module in modules:
         tags = tags + module.tags
-    return  [TagCategory(name=k, tags=list(v)) for k, v in groupby(module.tags, lambda t:t.category)]
+    return  [TagCategory(name=k, tags=unique_by_key(v, lambda t: t.tag)) for k, v in groupby(sorted(tags, key=lambda m:m.category), lambda m:m.category)]
+
+
+def unique_by_key(list, getkey):
+    seen = set()
+    return [seen.add(getkey(obj)) or obj for obj in list if getkey(obj) not in seen]

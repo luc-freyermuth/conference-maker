@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass
 import numpy as np
 from datetime import datetime
+from typing import Tuple
 
 from flask import Flask, render_template, request, send_from_directory
 
@@ -109,7 +110,8 @@ def import_conference():
 @server.route('/search-modules', methods=['GET'])
 def search_modules():
     search = request.args.get("search")
-    return render_modules_list(conference_modules, search)
+    tags = [(category_key.split('__')[1], request.args.get(category_key)) for category_key in filter(lambda k: k.startswith('category__') and request.args.get(k) != '', request.args.keys())]
+    return render_modules_list(conference_modules, search, tags)
 
 
 def get_current_conference() -> Conference:
@@ -119,10 +121,13 @@ def set_current_conference(c: Conference):
     global conference
     conference = c
 
-def render_modules_list(modules: list[ConferenceModule], search: str | None = None):
+def render_modules_list(modules: list[ConferenceModule], search: str | None = None, tags: list[Tuple[str, str]] | None = None):
     if search:
         search = search.lower()
-        modules = filter(lambda module: search in module.title.lower() or search in module.description.lower(), conference_modules)
+        modules = filter(lambda module: search in module.title.lower() or search in module.description.lower(), modules)
+    if tags:
+        for tag in tags:
+            modules = filter(lambda module: len(list(filter(lambda t:t.category == tag[0] and t.tag == tag[1], module.tags))), modules)
     modules = list(modules)
     modules.sort(key=lambda m: m.title)
     return render_template('modules_list.html', modules=modules)
