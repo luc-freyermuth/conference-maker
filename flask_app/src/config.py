@@ -22,7 +22,7 @@ if os.path.exists(os.path.join(application_path, 'modules')):
 elif os.environ.get('CONFERENCE_AND_MODULES_PATH') is not None:
     conference_and_modules_dir = os.environ.get('CONFERENCE_AND_MODULES_PATH')
 else:
-    raise RuntimeError('Enable to find conference and modules path')
+    raise RuntimeError('Unable to find conference and modules path; either move the executable to the root modules and conferences folder or set the CONFERENCE_AND_MODULES_PATH env variable')
 
 
 print('assets dir: ' + assets_dir)
