@@ -1,7 +1,7 @@
 {% for module in modules %}
     <div class="p-3 flex flex-col items-center cursor-pointer hover:bg-slate-100 rounded"
         hx-post="add-module/{{ module.id }}"
-        hx-target="#conference" hx-swap="innerHTML">
+        hx-target="#conference" hx-swap="morph:innerHTML">
         <img style="max-width: 250px;" class="object-contain" src="{{ module.img_url }}">
         <div style="display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 2;overflow: hidden;" class="h-[48px]" title="{{module.title}}"> {{ module.title }}</div>
        
