@@ -39,7 +39,7 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
         src_layout_id = extract_layout_id_from_layout_name(prs_src.Slides.Item(current_slide_src).CustomLayout.Name)
         if src_layout_id is None:
           raise ValueError(f'src layout has no id ({ module.id }, { module.title }, { current_slide_src }). You should use premade slide layouts for your conference.')
-        print(f'slide {current_slide_src} from pres {os.path.abspath(modules[i].slides_path)} layout_id : {src_layout_id}')
+        print(f'slide {current_slide_src} from pres {os.path.abspath(module.slides_path)} layout_id : {src_layout_id}')
         target_layout = find_custom_layout_with_id(prs, src_layout_id)
         prs.Slides.Item(current_slide_target).CustomLayout = target_layout
       prs_src.Close()
@@ -50,6 +50,10 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
       prs.Slides(current_slide_target).MoveToSectionStart(i+2)
 
       prs.Slides(current_slide_target).Shapes(1).TextFrame.TextRange.Text = part.title
+
+  prs.SectionProperties.AddSection(len(conference.parts) + 2, f'Conclusion & remerciements')
+  prs.Slides.InsertFromFile(os.path.join(get_assets_path(), "conclusion.slides.pptx"), prs.Slides.Count)
+  prs.Slides.Range(current_slide_target + 1).MoveToSectionStart(len(conference.parts) + 2)
 
   out = os.path.abspath(save_path)
 
