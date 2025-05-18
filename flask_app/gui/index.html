@@ -8,6 +8,7 @@
     <script src="assets/tailwind.js"></script>
     <script src="assets/idiomorph.min.js" integrity="sha384-JcorokHTL/m+D6ZHe2+yFVQopVwZ+91GxAPDyEZ6/A/OEPGEx1+MeNSe2OGvoRS9" crossorigin="anonymous"></script>
     <script src="assets/idiomorph-ext.min.js" integrity="sha384-szktAZju9fwY15dZ6D2FKFN4eZoltuXiHStNDJWK9+FARrxJtquql828JzikODob" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="assets/style.css">
     <title>Conference Maker</title>
 </head>
 
@@ -17,12 +18,18 @@
             <div class="flex flex-row justify-between">
                 <h1>Votre conférence !</h1>
                 <div class="flex flex-row gap-2">
-                    <button hx-post="download" hx-swap="none" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Générer la conférence</button>
+                    <button hx-post="download" hx-swap="none" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500 disabled:opacity-50" hx-disabled-elt="this">
+                        <span class="hide-on-request">Générer la conférence</span>
+                        <span class="show-on-request">Génération en cours...</span>
+                    </button>
                     <button hx-post="export" hx-swap="none" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Enregistrer</button>
                     <button hx-post="import" hx-target="#conference" hx-swap="innerHTML" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Charger</button>
                     <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-post="reset"
                         hx-target="#conference"
                         hx-swap="innerHTML">Recommencer</button>
+                    <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-post="add-cover-slide-part"
+                        hx-target="#conference"
+                        hx-swap="innerHTML">Ajouter une transition</button>
                 </div>
             </div>
 
@@ -34,7 +41,7 @@
 
         <div class="border-t-2 border-slate-200">
             <h1>Modules !</h1>
-            <form hx-trigger="change, keyup from:input delay:500ms" hx-get="search-modules" hx-target="#modules-list" hx-swap="innerHTML" class="flex gap-6 items-start">
+            <form hx-trigger="change, keyup from:[name='search'] delay:500ms" id="module-search-form" hx-get="search-modules" hx-target="#modules-list" hx-swap="innerHTML" class="flex gap-6 items-start">
                 <div class="inline-flex flex-col">
                     <label for="search">Recherche</label>
                     <input name="search" placeholder="search..." />

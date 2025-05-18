@@ -1,0 +1,20 @@
+.show-on-request {
+    display: none;
+}
+
+.htmx-request .show-on-request {
+    display: unset;
+}
+
+.htmx-request.show-on-request {
+    display: unset;
+}
+
+
+.htmx-request .hide-on-request {
+    display: none;
+}
+
+.htmx-request.hide-on-request {
+    display: none;
+}

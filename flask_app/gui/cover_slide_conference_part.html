@@ -1,0 +1,28 @@
+<div class="w-full flex flex-row gap-2 p-3 bg-slate-100 rounded" id="conference-part-{{index}}">
+    <div class="flex flex-col justify-between flex-1 gap-3">
+        <div>
+            <p class="font-semibold">Slide de transition</p>
+        </div>
+        <div class="flex flex-col gap-3">
+            <div class="flex flex-row gap-3 items-end">
+                <label>Titre</label>
+                <input name="title" value="{{title}}" hx-trigger="input changed delay:500ms" hx-put="cover-slide-part/{{index}}/title" hx-target="#conference-part-{{index}}" hx-swap="morph:outerHTML" />
+            </div>
+            <div class="flex flex-row gap-3 items-end">
+                <label for="image">Illustration</label>
+                <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Ajouter une Illustration</button>
+            </div>
+        </div>
+    </div>
+    <div class="flex flex-col items-end justify-between">
+        <div hx-target="#conference" hx-swap="morph:innerHTML">
+            {% if not is_first %}
+            <button hx-post="move/{{index}}/{{index - 1}}">↑</button>
+            {% endif %}
+            {% if not is_last %}
+            <button hx-post="move/{{index}}/{{index + 1}}">↓</button>
+            {% endif %}
+            <button hx-delete="part/{{index}}">❌</button>
+        </div>
+    </div>
+</div>

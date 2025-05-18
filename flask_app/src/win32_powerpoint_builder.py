@@ -41,7 +41,12 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
         # print(f'set slide {current_slide_target} to existing layout {target_layout.Name}')
       prs_src.Close()
     if isinstance(part, CoverSlideConferencePart):
-      print('cover not implemented, skip')
+      current_slide_target = current_slide_target + 1
+      prs.SectionProperties.AddSection(i + 2, f'Transition: {part.title}')
+      prs.Slides.InsertFromFile(os.path.join(get_assets_path(), "cover_slide_part.slides.pptx"), prs.Slides.Count)
+      prs.Slides(current_slide_target).MoveToSectionStart(i+2)
+
+      prs.Slides(current_slide_target).Shapes(1).TextFrame.TextRange.Text = part.title
 
   out = os.path.abspath(save_path)
 

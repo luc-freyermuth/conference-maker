@@ -36,10 +36,17 @@ def add_module(module_id: int):
     set_current_conference(c)
     return render_conference(c)
 
-@server.route('/move/<int:module_index>/<int:new_index>', methods=['POST'])
-def move_module(module_index: int, new_index: int):
+@server.route('/add-cover-slide-part', methods=['POST'])
+def add_cover_slide_part():
     c = get_current_conference()
-    c.parts[module_index], c.parts[new_index] = c.parts[new_index], c.parts[module_index]
+    c.parts.append(CoverSlideConferencePart(title="Transition"))
+    set_current_conference(c)
+    return render_conference(c)
+
+@server.route('/move/<int:part_index>/<int:new_index>', methods=['POST'])
+def move_module(part_index: int, new_index: int):
+    c = get_current_conference()
+    c.parts[part_index], c.parts[new_index] = c.parts[new_index], c.parts[part_index]
     set_current_conference(c)
     return render_conference(c)
 
@@ -57,12 +64,23 @@ def reset():
     return render_conference(new_conference)
 
 @server.route('/conference-settings', methods=['PUT'])
-def set_conference_settings():
+def set_conference_settings() -> str:
     c = get_current_conference()
-    c.title = request.form.get("title")
-    c.subtitle = request.form.get("subtitle")
+    c.title = request.form.get("title") or ''
+    c.subtitle = request.form.get("subtitle") or ''
     set_current_conference(c)
     return render_template('conference_settings.html', conference_title=c.title, conference_subtitle=c.subtitle)
+
+@server.route('/cover-slide-part/<int:part_index>/title', methods=['PUT'])
+def set_cover_slide_part_title(part_index: int):
+    c = get_current_conference()
+    part_to_edit = c.parts[part_index]
+    if (not isinstance(part_to_edit, CoverSlideConferencePart)):
+        raise ValueError('Part is not a cover slide')
+    part_to_edit.title = request.form.get("title") or ''
+    c.parts[part_index] = part_to_edit
+    set_current_conference(c)
+    return render_cover_slide_conference_part(part_to_edit, index=part_index, total=len(c.parts))
 
 @server.route('/download', methods=['POST'])
 def download():
@@ -126,7 +144,7 @@ def render_modules_list(modules: list[ConferenceModule], search: str | None = No
 def render_conference(c: Conference):
     # modules: list[ConferenceModule] = [next(m for m in conference_modules if m.id == id) for id in c.modules]
     parts = [
-        render_module_conference_part(part, get_module_by_id(part.module_id), idx, len(c.parts)) if isinstance(part, ModuleConferencePart) else ''
+        render_module_conference_part(part, get_module_by_id(part.module_id), idx, len(c.parts)) if isinstance(part, ModuleConferencePart) else render_cover_slide_conference_part(part, idx, len(c.parts))
         for idx, part in enumerate(c.parts)
     ]
     total_duration = np.sum([get_module_by_id(cast(ModuleConferencePart, part).module_id).duration_minutes for part in filter(lambda p: isinstance(p, ModuleConferencePart), c.parts)])
@@ -149,6 +167,13 @@ def render_module_conference_part(cp: ModuleConferencePart, module: ConferenceMo
                             index = index,
                             is_first = index == 0,
                             is_last = index == (total - 1))
+
+def render_cover_slide_conference_part(cp: CoverSlideConferencePart, index: int, total: int) -> str:
+    return render_template('cover_slide_conference_part.html',
+                           title = cp.title,
+                           index = index,
+                           is_first = index == 0,
+                           is_last = index == (total - 1))
 
 def get_module_by_id(module_id: int) -> ConferenceModule:
     module = next(m for m in conference_modules if m.id == module_id)
