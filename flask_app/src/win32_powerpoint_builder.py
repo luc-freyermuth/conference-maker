@@ -38,7 +38,6 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
         print(f'slide {current_slide_src} from pres {os.path.abspath(modules[i].slides_path)} layout_id : {src_layout_id}')
         target_layout = find_custom_layout_with_id(prs, src_layout_id)
         prs.Slides.Item(current_slide_target).CustomLayout = target_layout
-        # print(f'set slide {current_slide_target} to existing layout {target_layout.Name}')
       prs_src.Close()
     if isinstance(part, CoverSlideConferencePart):
       current_slide_target = current_slide_target + 1
