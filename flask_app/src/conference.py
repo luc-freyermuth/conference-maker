@@ -52,4 +52,15 @@ def parse_conference_v1(conference: Any) -> Conference:
     )
 
 def parse_conference_v2(conference: Any) -> Conference:
-    raise NotImplementedError('unimplemented')
+    def deserialize_part(p: Any) -> ModuleConferencePart | CoverSlideConferencePart :
+        if p["kind"] == "module":
+            return ModuleConferencePart(module_id=p["module_id"])
+        elif p["kind"] == "cover_slide":
+            return CoverSlideConferencePart(title=p["title"])
+        else:
+            raise ValueError('Unable to deserialize part')
+    return Conference(
+        parts=list(map(deserialize_part, conference["parts"])), 
+        title=conference["title"], 
+        subtitle=conference["subtitle"]
+    )
