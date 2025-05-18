@@ -32,7 +32,7 @@ def landing():
 @server.route('/add-module/<int:module_id>', methods=['POST'])
 def add_module(module_id: int):
     c = get_current_conference()
-    c.parts.append(ModuleConferencePart(module_id=module_id))
+    c.parts.append(ModuleConferencePart(module_id=module_id, hide_cover_slide=False))
     set_current_conference(c)
     return render_conference(c)
 

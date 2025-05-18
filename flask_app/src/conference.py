@@ -6,6 +6,7 @@ from typing import Any
 @dataclass
 class ModuleConferencePart():
     module_id: int
+    hide_cover_slide: bool
 
 @dataclass
 class CoverSlideConferencePart():
@@ -20,7 +21,7 @@ class Conference:
 def serialize_conference(conference: Conference) -> str:
     def serialize_part(p: ModuleConferencePart | CoverSlideConferencePart) -> dict :
         if isinstance(p, ModuleConferencePart):
-            return { "kind": "module", "module_id": p.module_id }
+            return { "kind": "module", "module_id": p.module_id, "hide_cover_slide": p.hide_cover_slide }
         elif isinstance(p, CoverSlideConferencePart):
             return { "kind": "cover_slide", "title": p.title }
         else:
@@ -46,7 +47,7 @@ def deserialize_conference(serialized: str) -> Conference:
 
 def parse_conference_v1(conference: Any) -> Conference:
     return Conference(
-        parts=list(map(lambda m_id: ModuleConferencePart(module_id=m_id), conference["modules"])), 
+        parts=list(map(lambda m_id: ModuleConferencePart(module_id=m_id, hide_cover_slide=False), conference["modules"])), 
         title=conference["title"] if "title" in conference else "", 
         subtitle=conference["subtitle"] if "subtitle" in conference else ""
     )
@@ -54,7 +55,7 @@ def parse_conference_v1(conference: Any) -> Conference:
 def parse_conference_v2(conference: Any) -> Conference:
     def deserialize_part(p: Any) -> ModuleConferencePart | CoverSlideConferencePart :
         if p["kind"] == "module":
-            return ModuleConferencePart(module_id=p["module_id"])
+            return ModuleConferencePart(module_id=p["module_id"], hide_cover_slide=p["hide_cover_slide"])
         elif p["kind"] == "cover_slide":
             return CoverSlideConferencePart(title=p["title"])
         else:

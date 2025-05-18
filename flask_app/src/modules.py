@@ -22,6 +22,7 @@ class ConferenceModule:
     img_url: str
     slides_path: str
     tags: list[ModuleTag]
+    has_cover_slide: bool
 
 
 def read_modules(folder) -> list[ConferenceModule]:
@@ -43,7 +44,7 @@ def read_modules(folder) -> list[ConferenceModule]:
 
         slides_file = next((x for x in module_files if x.endswith('slides.pptx')), None)
 
-        if general_df[1][3] != 'Caché':
+        if general_df[1][4] != 'Caché':
             modules.append(ConferenceModule(
                 id=int(module_subfolder[0:4]),
                 title=general_df[1][0],
@@ -51,7 +52,8 @@ def read_modules(folder) -> list[ConferenceModule]:
                 duration_minutes=general_df[1][2],
                 img_url=f'/static/modules/{module_subfolder}/{module_cover_file}' if module_cover_file is not None else '',
                 slides_path=f'{modules_folder}/{module_subfolder}/{slides_file}',
-                tags=[ModuleTag(category, tag) for category in tags_df.columns for tag in tags_df[category].tolist() if isinstance(tag, str)]
+                tags=[ModuleTag(category, tag) for category in tags_df.columns for tag in tags_df[category].tolist() if isinstance(tag, str)],
+                has_cover_slide=general_df[1][3]
             ))
 
     return modules
