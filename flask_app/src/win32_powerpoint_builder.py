@@ -31,6 +31,10 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
       prs.Slides.Range(range(current_slide_target + 1, current_slide_target + 1 + prs_src.Slides.Count)).MoveToSectionStart(i+2)
       
       for current_slide_src in range(1, prs_src.Slides.Count + 1):
+        if current_slide_src == 1 and part.hide_cover_slide:
+          print(f"skipping cover slide for ({ module.id }, { module.title })")
+          prs.Slides.Item(current_slide_target + 1).Delete()
+          continue
         current_slide_target = current_slide_target + 1
         src_layout_id = extract_layout_id_from_layout_name(prs_src.Slides.Item(current_slide_src).CustomLayout.Name)
         if src_layout_id is None:

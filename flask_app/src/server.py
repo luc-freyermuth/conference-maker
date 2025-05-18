@@ -82,6 +82,17 @@ def set_cover_slide_part_title(part_index: int):
     set_current_conference(c)
     return render_cover_slide_conference_part(part_to_edit, index=part_index, total=len(c.parts))
 
+@server.route('/module-part/<int:part_index>/hide-cover-slide', methods=['PUT'])
+def set_module_part_hide_cover_slide(part_index: int):
+    c = get_current_conference()
+    part_to_edit = c.parts[part_index]
+    if (not isinstance(part_to_edit, ModuleConferencePart)):
+        raise ValueError('Part is not a module')
+    part_to_edit.hide_cover_slide = request.form.get("hide-cover-slide") == 'on'
+    c.parts[part_index] = part_to_edit
+    set_current_conference(c)
+    return render_module_conference_part(part_to_edit, get_module_by_id(part_to_edit.module_id), index=part_index, total=len(c.parts))
+
 @server.route('/download', methods=['POST'])
 def download():
     c = get_current_conference()
@@ -166,7 +177,9 @@ def render_module_conference_part(cp: ModuleConferencePart, module: ConferenceMo
                             tags_categories = [ { "category": k, "tags": [tag.tag for tag in v] } for k, v in groupby(module.tags, lambda t:t.category) ],
                             index = index,
                             is_first = index == 0,
-                            is_last = index == (total - 1))
+                            is_last = index == (total - 1),
+                            show_hide_cover = module.has_cover_slide,
+                            hide_cover = cp.hide_cover_slide)
 
 def render_cover_slide_conference_part(cp: CoverSlideConferencePart, index: int, total: int) -> str:
     return render_template('cover_slide_conference_part.html',
