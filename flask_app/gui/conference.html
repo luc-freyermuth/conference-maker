@@ -1,41 +1,7 @@
 <div class="flex flex-row h-full px-2">
     <div class="flex flex-col gap-2 overflow-y-scroll flex-1">
-        {% for module in modules %}
-            <div class="w-full flex flex-row gap-2 p-3 bg-slate-100 rounded">
-                <img style="max-width: 150px;" class="object-contain" src="{{ module.image_url }}">
-                <div class="flex flex-col justify-between flex-1">
-                    <div>
-                        <p class="font-semibold">{{ module.title }}</p>
-                        <p class="text-slate-500">{{ module.description }}</p>
-                    </div>
-                    <div class="flex flex-row justify-between items-end">
-                        <p>{{ module.duration_minutes }} minutes</p>
-                        <div class="text-right">
-                            {% for tags_category in module.tags_categories %}
-                                <p class="text-xs"><span class="font-semibold">{{ tags_category.category }}</span> : {% for tag in tags_category.tags %} 
-                                    {{ tag }}{% if not loop.last %} | {% endif %}
-                                {% endfor %}</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                <div class="flex flex-col items-end justify-between">
-                    <div hx-target="#conference" hx-swap="morph:innerHTML">
-                        {% if not loop.first %}
-                            <button hx-post="move/{{loop.index0}}/{{module.previous}}">↑</button>
-                        {% endif %}
-                        {% if not loop.last %}
-                            <button hx-post="move/{{loop.index0}}/{{module.next}}">↓</button>
-                        {% endif %}
-                        <button hx-delete="module/{{loop.index0}}">❌</button>
-                    </div>
-                    <!-- <div class="flex flex-col items-end text-xs">
-                        {% for tags_category in module.tags_categories %}
-                            <p><span class="font-semibold">{{ tags_category.category }}</span> : {% for tag in tags_category.tags %} {{ tag }} {% endfor %}</p>
-                        {% endfor %}
-                    </div> -->
-                </div>
-            </div>
+        {% for part in parts %}
+            {{ part|safe }}
         {% endfor %}
     </div>
     <div class="flex-1 text-right">

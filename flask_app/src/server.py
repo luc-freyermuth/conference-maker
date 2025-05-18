@@ -1,9 +1,7 @@
 from itertools import groupby
-import json
-from dataclasses import dataclass
 import numpy as np
 from datetime import datetime
-from typing import Tuple
+from typing import Tuple, cast
 
 from flask import Flask, render_template, request, send_from_directory
 
@@ -11,19 +9,14 @@ from modules import ConferenceModule, read_modules, get_all_tags
 from win32_powerpoint_builder import create_conference_slides
 import webview
 from config import get_conference_and_modules_path, get_gui_path, get_assets_path
+from conference import Conference, serialize_conference, deserialize_conference, ModuleConferencePart, CoverSlideConferencePart
 
 
 server = Flask(__name__, static_url_path='/static', static_folder=get_conference_and_modules_path(), template_folder=get_gui_path())
-server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1 
-
-@dataclass
-class Conference:
-    title: str
-    subtitle: str
-    modules: list[int]
+server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
 
 conference_modules: list[ConferenceModule] = read_modules(get_conference_and_modules_path())
-conference = Conference(title='Ma conférence', subtitle='Accroche', modules=[])
+conference = Conference(title='Ma conférence', subtitle='Accroche', parts=[])
 
 @server.route('/')
 def landing():
@@ -37,23 +30,23 @@ def landing():
 
 
 @server.route('/add-module/<int:module_id>', methods=['POST'])
-def add_module(module_id):
+def add_module(module_id: int):
     c = get_current_conference()
-    c.modules.append(module_id)
+    c.parts.append(ModuleConferencePart(module_id=module_id))
     set_current_conference(c)
     return render_conference(c)
 
 @server.route('/move/<int:module_index>/<int:new_index>', methods=['POST'])
-def move_module(module_index, new_index):
+def move_module(module_index: int, new_index: int):
     c = get_current_conference()
-    c.modules[module_index], c.modules[new_index] = c.modules[new_index], c.modules[module_index]
+    c.parts[module_index], c.parts[new_index] = c.parts[new_index], c.parts[module_index]
     set_current_conference(c)
     return render_conference(c)
 
-@server.route('/module/<int:module_index>', methods=['DELETE'])
-def remove_module(module_index):
+@server.route('/part/<int:module_index>', methods=['DELETE'])
+def remove_module(module_index: int):
     c = get_current_conference()
-    c.modules.pop(module_index)
+    c.parts.pop(module_index)
     set_current_conference(c)
     return render_conference(c)
 
@@ -74,14 +67,12 @@ def set_conference_settings():
 @server.route('/download', methods=['POST'])
 def download():
     c = get_current_conference()
-    modules = [next(m for m in conference_modules if m.id == id) for id in c.modules]
 
     file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.pptx')
     if file and len(file) > 0:
         create_conference_slides(
-            modules, 
-            title=c.title, 
-            subtitle=c.subtitle, 
+            conference_modules, 
+            conference=c, 
             date=datetime.now().strftime("%d/%m/%Y"), 
             save_path=file
         )
@@ -124,54 +115,46 @@ def set_current_conference(c: Conference):
 def render_modules_list(modules: list[ConferenceModule], search: str | None = None, tags: list[Tuple[str, str]] | None = None):
     if search:
         search = search.lower()
-        modules = filter(lambda module: search in module.title.lower() or search in module.description.lower(), modules)
+        modules = list(filter(lambda module: search in module.title.lower() or search in module.description.lower(), modules))
     if tags:
         for tag in tags:
-            modules = filter(lambda module: len(list(filter(lambda t:t.category == tag[0] and t.tag == tag[1], module.tags))), modules)
+            modules = list(filter(lambda module: len(list(filter(lambda t:t.category == tag[0] and t.tag == tag[1], module.tags))), modules))
     modules = list(modules)
     modules.sort(key=lambda m: m.title)
     return render_template('modules_list.html', modules=modules)
 
 def render_conference(c: Conference):
-    modules: list[ConferenceModule] = [next(m for m in conference_modules if m.id == id) for id in c.modules]
-    modules_data = [
-        {
-            "image_url": module.img_url,
-            "title": module.title,
-            "description": module.description,
-            "duration_minutes": module.duration_minutes,
-            "tags_categories": [ { "category": k, "tags": [tag.tag for tag in v] } for k, v in groupby(module.tags, lambda t:t.category) ],
-            "previous": idx -1,
-            "next": idx + 1
-        } for idx, module in enumerate(modules)
+    # modules: list[ConferenceModule] = [next(m for m in conference_modules if m.id == id) for id in c.modules]
+    parts = [
+        render_module_conference_part(part, get_module_by_id(part.module_id), idx, len(c.parts)) if isinstance(part, ModuleConferencePart) else ''
+        for idx, part in enumerate(c.parts)
     ]
-    total_duration = np.sum([module.duration_minutes for module in modules])
+    total_duration = np.sum([get_module_by_id(cast(ModuleConferencePart, part).module_id).duration_minutes for part in filter(lambda p: isinstance(p, ModuleConferencePart), c.parts)])
 
     # conference_module_tags = ConferenceModuleTag.objects.order_by('tag__category', 'tag__name').filter(conference_module__in=[module.id for module in modules]).select_related('tag', 'tag__category', 'conference_module')
     # tags_grouped_by_category = groupby([{ "tag": cm.tag, "duration_minutes": cm.tag_category_importance * cm.conference_module.duration_minutes } for cm in conference_module_tags], lambda t:t["tag"].category.name)
     # categories_tags_repartition = [ { "category": category, "tags": [{"tag": tag, "duration_minutes": np.sum([occ["duration_minutes"] for occ in tag_details])} for tag, tag_details in groupby(tags_details, lambda item: item["tag"].name)] } for category, tags_details in tags_grouped_by_category ]
-    return render_template('conference.html', conference_title=c.title, conference_subtitle=c.subtitle, modules=modules_data, stats={
+    return render_template('conference.html', conference_title=c.title, conference_subtitle=c.subtitle, parts=parts, stats={
         "duration_minutes": total_duration,
         "categories_tags_repartition": []
     })
 
-def serialize_conference(conference: Conference) -> str:
-    to_export = {
-        "modules": conference.modules,
-        "title": conference.title,
-        "subtitle": conference.subtitle,
-        "version": 1
-    }
-    return json.dumps(to_export)
+def render_module_conference_part(cp: ModuleConferencePart, module: ConferenceModule, index: int, total: int) -> str:
+    return render_template('module_conference_part.html', 
+                            image_url = module.img_url,
+                            title = module.title,
+                            description = module.description,
+                            duration_minutes = module.duration_minutes,
+                            tags_categories = [ { "category": k, "tags": [tag.tag for tag in v] } for k, v in groupby(module.tags, lambda t:t.category) ],
+                            index = index,
+                            is_first = index == 0,
+                            is_last = index == (total - 1))
 
-def deserialize_conference(serialized: str) -> Conference:
-    parsed = json.loads(serialized)
-    return Conference(
-        modules=parsed["modules"], 
-        title=parsed["title"] if "title" in parsed else "", 
-        subtitle=parsed["subtitle"] if "subtitle" in parsed else ""
-    )
-
+def get_module_by_id(module_id: int) -> ConferenceModule:
+    module = next(m for m in conference_modules if m.id == module_id)
+    if module is None:
+        raise ValueError(f'module with id {module_id} not found')
+    return module
 
 @server.route('/assets/<path:filename>')
 def custom_static(filename):

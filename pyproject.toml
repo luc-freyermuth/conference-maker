@@ -16,4 +16,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pyinstaller>=6.13.0",
+    "mypy>=1.15.0"
 ]
+
+[tool.mypy]
+ignore_missing_imports = true

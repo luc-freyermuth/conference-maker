@@ -17,10 +17,12 @@ else:
     print('not frozen')
     application_path = os.path.dirname(__file__)
 
+env_conference_and_modules_path = os.environ.get('CONFERENCE_AND_MODULES_PATH')
+
 if os.path.exists(os.path.join(application_path, 'modules')):
     conference_and_modules_dir = application_path
-elif os.environ.get('CONFERENCE_AND_MODULES_PATH') is not None:
-    conference_and_modules_dir = os.environ.get('CONFERENCE_AND_MODULES_PATH')
+elif env_conference_and_modules_path is not None:
+    conference_and_modules_dir = env_conference_and_modules_path
 else:
     raise RuntimeError('Unable to find conference and modules path; either move the executable to the root modules and conferences folder or set the CONFERENCE_AND_MODULES_PATH env variable')
 
