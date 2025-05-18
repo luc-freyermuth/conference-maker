@@ -34,7 +34,7 @@ def serialize_conference(conference: Conference) -> str:
         "subtitle": conference.subtitle,
         "version": 2
     }
-    return json.dumps(to_export)
+    return json.dumps(to_export, indent=4)
 
 def deserialize_conference(serialized: str) -> Conference:
     parsed = json.loads(serialized)
