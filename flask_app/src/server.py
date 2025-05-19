@@ -20,9 +20,6 @@ conference = Conference(title='Ma conférence', subtitle='Accroche', parts=[])
 
 @server.route('/')
 def landing():
-    """
-    Render index.html. Initialization is performed asynchronously in initialize() function
-    """
     return render_template('index.html', 
                            modules_list=render_modules_list(conference_modules), 
                            conference=render_conference(get_current_conference()), 
