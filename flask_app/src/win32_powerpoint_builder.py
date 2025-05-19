@@ -50,7 +50,13 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
       prs.Slides(current_slide_target).MoveToSectionStart(i+2)
 
       prs.Slides(current_slide_target).Shapes(1).TextFrame.TextRange.Text = part.title
-      prs.Slides(current_slide_target).Shapes.AddPicture(f'http://localhost:5000/dynamic-assets/current-conference/cover-slide-part/image/{i}',False, True, 0 ,0 , -1 , -1 )
+      if (part.image is not None):
+        picture_url = f'http://localhost:5000/dynamic-assets/current-conference/cover-slide-part/image/{i}'
+        print(f'Adding picture {picture_url} to transition slide {current_slide_target}')
+        added_picture = prs.Slides(current_slide_target).Shapes.AddPicture(f'http://localhost:5000/dynamic-assets/current-conference/cover-slide-part/image/{i}', False, True, 0, 0, -1, -1)
+        print('ok')
+      else:
+        print(f'Transtion slide ({i}, {current_slide_target}) has no image. Skipping.')
 
   prs.SectionProperties.AddSection(len(conference.parts) + 2, f'Conclusion & remerciements')
   prs.Slides.InsertFromFile(os.path.join(get_assets_path(), "conclusion.slides.pptx"), prs.Slides.Count)

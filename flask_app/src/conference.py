@@ -8,9 +8,15 @@ class ModuleConferencePart():
     module_id: int
     hide_cover_slide: bool
 
+@dataclass 
+class CoverSlideConferencePartImage():
+    base64: str
+
 @dataclass
 class CoverSlideConferencePart():
     title: str
+    image: CoverSlideConferencePartImage | None
+
 
 @dataclass
 class Conference:
@@ -23,7 +29,7 @@ def serialize_conference(conference: Conference) -> str:
         if isinstance(p, ModuleConferencePart):
             return { "kind": "module", "module_id": p.module_id, "hide_cover_slide": p.hide_cover_slide }
         elif isinstance(p, CoverSlideConferencePart):
-            return { "kind": "cover_slide", "title": p.title }
+            return { "kind": "cover_slide", "title": p.title, "image_base64": p.image.base64 if p.image is not None else None }
         else:
             raise ValueError('Unable to serialize part')
         
@@ -57,7 +63,7 @@ def parse_conference_v2(conference: Any) -> Conference:
         if p["kind"] == "module":
             return ModuleConferencePart(module_id=p["module_id"], hide_cover_slide=p["hide_cover_slide"])
         elif p["kind"] == "cover_slide":
-            return CoverSlideConferencePart(title=p["title"])
+            return CoverSlideConferencePart(title=p["title"], image=(CoverSlideConferencePartImage(base64=p["image_base64"]) if ("image_base64" in p and p["image_base64"] is not None) else None))
         else:
             raise ValueError('Unable to deserialize part')
     return Conference(

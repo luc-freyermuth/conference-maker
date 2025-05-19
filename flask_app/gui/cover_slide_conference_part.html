@@ -10,7 +10,16 @@
             </div>
             <div class="flex flex-row gap-3 items-end">
                 <label for="image">Illustration</label>
-                <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Ajouter une Illustration</button>
+                {% if image_url  %}
+                    <img style="max-height: 100px;" src="{{ image_url }}" />
+                {% endif %}
+                <button hx-post="/cover-slide-part/{{index}}/pick-image" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-target="#conference-part-{{index}}" hx-swap="morph:outerHTML">
+                    {% if image_url  %} 
+                        Modifier l'illustration
+                    {% else %}
+                        Ajouter une Illustration
+                    {% endif %}
+                </button>
             </div>
         </div>
     </div>
