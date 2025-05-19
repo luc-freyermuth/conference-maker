@@ -197,3 +197,7 @@ def get_module_by_id(module_id: int) -> ConferenceModule:
 @server.route('/assets/<path:filename>')
 def custom_static(filename):
     return send_from_directory(get_assets_path(), filename)
+
+@server.route('/dynamic-assets/current-conference/cover-slide-part/image/<int:part_index>')
+def dynamic_assets_for_conference_conference_cover_slide_part_image(part_index: int):
+    return send_from_directory(get_assets_path(), "test_img.png")
