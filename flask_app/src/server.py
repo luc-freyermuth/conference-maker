@@ -56,7 +56,7 @@ def remove_module(module_index: int):
 
 @server.route('/reset', methods=['POST'])
 def reset():
-    new_conference = Conference(modules=[])
+    new_conference = Conference(title='Ma conférence', subtitle='Accroche', parts=[])
     set_current_conference(new_conference)
     return render_conference(new_conference)
 
