@@ -63,7 +63,9 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
 
   out = os.path.abspath(save_path)
 
+  print(f'Saving conference to: {save_path}')
   prs.SaveAs(out)
+  print(f'Saved conference')
   prs.Close()
 
 def extract_layout_id_from_layout_name(layout_name: str) -> int | None:

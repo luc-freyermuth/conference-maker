@@ -20,6 +20,9 @@ uv run --env-file .env .\flask_app\src\main.py
 ```sh
 # for release
 uv run python -m PyInstaller conference_builder.spec
+
+# debug version
+uv run python -m PyInstaller conference_builder_debug.spec
 ```
 
 #### Command used to generate spec file :

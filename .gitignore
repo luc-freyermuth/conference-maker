@@ -32,6 +32,7 @@ MANIFEST
 *.manifest
 *.spec
 !conference_builder.spec
+!conference_builder_debug.spec
 
 # Installer logs
 pip-log.txt
