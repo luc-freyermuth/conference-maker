@@ -5,6 +5,8 @@ import pythoncom
 from config import get_assets_path
 from modules import ConferenceModule
 from conference import Conference, ModuleConferencePart, CoverSlideConferencePart
+from image_cache import image_cache
+
 
 def create_conference_slides(modules: list[ConferenceModule], conference: Conference, date: str, save_path: str):
   pythoncom.CoInitialize()
@@ -51,9 +53,10 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
 
       prs.Slides(current_slide_target).Shapes(1).TextFrame.TextRange.Text = part.title
       if (part.image is not None):
-        picture_url = f'http://localhost:5000/dynamic-assets/current-conference/cover-slide-part/image/{i}'
+        cache_id = image_cache.add_to_cache(part.image.base64)
+        picture_url = f'http://localhost:5000/dynamic-assets/image_cache/{cache_id}'
         print(f'Adding picture {picture_url} to transition slide {current_slide_target}')
-        prs.Slides(current_slide_target).Shapes.AddPicture(f'http://localhost:5000/dynamic-assets/current-conference/cover-slide-part/image/{i}', False, True, 0, 0, -1, -1)
+        prs.Slides(current_slide_target).Shapes.AddPicture(picture_url, False, True, 0, 0, -1, -1)
       else:
         print(f'Transtion slide ({i}, {current_slide_target}) has no image. Skipping.')
 
@@ -67,6 +70,8 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
   prs.SaveAs(out)
   print(f'Saved conference')
   prs.Close()
+  image_cache.clear_cache()
+
 
 def extract_layout_id_from_layout_name(layout_name: str) -> int | None:
   try:

@@ -1,7 +1,8 @@
 from itertools import groupby
 import numpy as np
 from datetime import datetime
-from typing import Tuple, cast
+from typing import Tuple, cast, Any
+import os
 
 from flask import Flask, render_template, request, send_from_directory, send_file
 
@@ -12,6 +13,7 @@ from config import get_conference_and_modules_path, get_gui_path, get_assets_pat
 from conference import Conference, serialize_conference, deserialize_conference, ModuleConferencePart, CoverSlideConferencePart, CoverSlideConferencePartImage
 import base64
 import io
+from image_cache import image_cache
 
 
 server = Flask(__name__, static_url_path='/static', static_folder=get_conference_and_modules_path(), template_folder=get_gui_path())
@@ -148,6 +150,54 @@ def import_conference():
             set_current_conference(deserialize_conference(file.read()))
     return render_conference(get_current_conference())
 
+@server.route('/generate-kit', methods=['POST'])
+def generate_kit() -> Any:
+    dirs = webview.windows[0].create_file_dialog(webview.FOLDER_DIALOG, directory=get_conference_and_modules_path())
+    if not (dirs and len(dirs) > 0):
+        return "Did not pick a conference directory", 400
+    source_dir = dirs[0]
+    if isinstance(source_dir, bytes):
+        source_dir = source_dir.decode('utf-8')
+    print(f'Will generate kit from directory: {source_dir}')
+
+    kit_destination: str = cast(str, webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='mon_kit'))
+
+    if not kit_destination:
+        return "Did not pick a destination", 400
+
+    (kit_dir, kit_name) = os.path.split(kit_destination)
+    print(f'Will generate kit with name "{kit_name}" in directory: {kit_dir}')
+
+    if os.path.isdir(kit_destination):
+        return "Kit already exists", 400
+
+    files_in_src = [f for f in os.listdir(source_dir) if (os.path.isfile(os.path.join(source_dir, f)))]
+    print(f'Files found in kit source directory: {files_in_src}')
+    focon_files = [f for f in files_in_src if f.endswith('.focon')]
+    print(f'Kit will be generated for focon files: {focon_files}')
+
+    print(f'Creating kit directory: {kit_destination}')
+    os.makedirs(kit_destination)
+
+    for focon_file in focon_files:
+        conference_name = focon_file.split('.')[0]
+        focon_file_path = os.path.join(source_dir, focon_file)
+        print(f'=== Generating files for focon_file: {focon_file_path} ===')
+        conference: Conference
+        with open(focon_file_path) as file:
+            conference = deserialize_conference(file.read())
+        print('Generating conference')
+        create_conference_slides(
+            conference_modules, 
+            conference=conference, 
+            date=datetime.now().strftime("%d/%m/%Y"), 
+            save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}.pptx')
+        )
+        print(f'=== Files generated successfully for focon_file: {focon_file_path} ===')
+
+    print('Kit generated successfully')
+    return '', 204
+
 @server.route('/search-modules', methods=['GET'])
 def search_modules():
     search = request.args.get("search")
@@ -231,3 +281,11 @@ def dynamic_assets_for_conference_conference_cover_slide_part_image(part_index: 
         return send_file(buf, mimetype="image/png")
     else:
         return "Unable to generate image", 400
+    
+@server.route('/dynamic-assets/image_cache/<int:cache_id>')
+def dynamic_assets_from_cache(cache_id: int):
+    base64_image = image_cache.get_from_cache(cache_id)
+    b = base64.b64decode(base64_image.encode('utf-8'))
+    buf = io.BytesIO(b)
+    buf.seek(0)
+    return send_file(buf, mimetype="image/png")
