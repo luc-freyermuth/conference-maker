@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import os
 import pandas as pd
 from itertools import groupby
+from pptx import Presentation
 
 @dataclass
 class ModuleTag:
@@ -29,6 +30,7 @@ class ConferenceModule:
     tags: list[ModuleTag]
     has_cover_slide: bool
     messages: list[ModuleMessage]
+    slides_count: int
 
 
 def read_modules(folder) -> list[ConferenceModule]:
@@ -39,8 +41,15 @@ def read_modules(folder) -> list[ConferenceModule]:
         module_path = os.path.join(modules_folder, module_subfolder)
         
         module_files = [f for f in os.listdir(module_path) if os.path.isfile(os.path.join(module_path, f))]
+
         module_definition_file = next(x for x in module_files if x.endswith('module.xlsx'))
         module_definition_file_path = os.path.join(module_path, module_definition_file)
+
+        module_slides_file = next(x for x in module_files if x.endswith('slides.pptx'))
+        module_slides_file_path = os.path.join(module_path, module_slides_file)
+
+        prs = Presentation(module_slides_file_path)
+        slides_count = len(prs.slides)
 
         pd_xl_file = pd.ExcelFile(module_definition_file_path)
         general_df = pd.read_excel(pd_xl_file, 'General', header=None)
@@ -49,7 +58,7 @@ def read_modules(folder) -> list[ConferenceModule]:
 
         module_cover_file = next((x for x in module_files if x.endswith('cover.png') or x.endswith('cover.jpg')), None)
 
-        slides_file = next((x for x in module_files if x.endswith('slides.pptx')), None)
+
 
         if general_df[1][4] != 'Caché':
             modules.append(ConferenceModule(
@@ -58,10 +67,11 @@ def read_modules(folder) -> list[ConferenceModule]:
                 description=general_df[1][1],
                 duration_minutes=general_df[1][2],
                 img_url=f'/static/modules/{module_subfolder}/{module_cover_file}' if module_cover_file is not None else '',
-                slides_path=f'{modules_folder}/{module_subfolder}/{slides_file}',
+                slides_path=f'{modules_folder}/{module_subfolder}/{module_slides_file}',
                 tags=[ModuleTag(category, tag) for category in tags_df.columns for tag in tags_df[category].tolist() if isinstance(tag, str)],
                 has_cover_slide=general_df[1][3],
-                messages=[ModuleMessage(row.iloc[0], row.iloc[1]) for _, row in messages_df.iterrows()]
+                messages=[ModuleMessage(row.iloc[0], row.iloc[1]) for _, row in messages_df.iterrows()],
+                slides_count=slides_count
             ))
 
     return modules
