@@ -1,4 +1,4 @@
-from modules import ConferenceModule
+from modules import ConferenceModule, ModuleMessage
 from conference import Conference, ModuleConferencePart
 
 from openpyxl import Workbook
@@ -20,13 +20,20 @@ def create_assessment_grid(modules: list[ConferenceModule], conference: Conferen
     for part in conference.parts:
         if isinstance(part, ModuleConferencePart):
             module = next(m for m in modules if m.id == part.module_id)
-            for message in module.messages:
+            slides_count = module.slides_count if part.hide_cover_slide is False else module.slides_count - 1
+            messages = [
+                ModuleMessage(
+                    slide_index1=m.slide_index1 if part.hide_cover_slide is False else max(m.slide_index1 - 1, 1), 
+                    content=m.content
+                ) for m in module.messages
+            ]
+            for message in messages:
                 ws.append([module.title, message.slide_index1 + curr_slides, 'A renseigner', message.content])
                 curr_row += 1
                 status_validation.add(ws.cell(row=curr_row, column=3))
             ws.append([
                 module.title, 
-                f'{curr_slides + 1} à {curr_slides + module.slides_count}' if module.slides_count > 1 else curr_slides + 1, 
+                f'{curr_slides + 1} à {curr_slides + slides_count}' if slides_count > 1 else curr_slides + 1, 
                 'A renseigner',
                 f'Respect du timing : environ {module.duration_minutes} minute{'s' if module.duration_minutes > 1 else ''}'
             ])
@@ -35,7 +42,7 @@ def create_assessment_grid(modules: list[ConferenceModule], conference: Conferen
             for i in range(5):
                 ws.cell(row=curr_row, column=i+1).border = Border(bottom=Side(border_style=BORDER_MEDIUM))
                 ws.cell(row=curr_row, column=i+1).fill = PatternFill("solid", fgColor="F2F2F2")
-            curr_slides += module.slides_count
+            curr_slides += slides_count
         else:
             curr_slides += 1
     ws.column_dimensions['A'].width = 40

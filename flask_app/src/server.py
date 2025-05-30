@@ -209,6 +209,12 @@ def generate_kit() -> Any:
             date=datetime.now().strftime("%d/%m/%Y"), 
             save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}.pptx')
         )
+        print('Generating assessement grid')
+        create_assessment_grid(
+            conference_modules, 
+            conference=conference, 
+            save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}_Grille_d_evaluation.xlsx')
+        )
         print(f'=== Files generated successfully for focon_file: {focon_file_path} ===')
 
     print('Kit generated successfully')
