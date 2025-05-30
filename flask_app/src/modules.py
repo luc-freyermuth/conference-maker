@@ -14,6 +14,11 @@ class TagCategory:
     tags: list[ModuleTag]
 
 @dataclass
+class ModuleMessage:
+    slide_index1: int
+    content: str
+
+@dataclass
 class ConferenceModule:
     id: int
     title: str
@@ -23,6 +28,7 @@ class ConferenceModule:
     slides_path: str
     tags: list[ModuleTag]
     has_cover_slide: bool
+    messages: list[ModuleMessage]
 
 
 def read_modules(folder) -> list[ConferenceModule]:
@@ -39,6 +45,7 @@ def read_modules(folder) -> list[ConferenceModule]:
         pd_xl_file = pd.ExcelFile(module_definition_file_path)
         general_df = pd.read_excel(pd_xl_file, 'General', header=None)
         tags_df = pd.read_excel(pd_xl_file, 'Etiquettes')
+        messages_df = pd.read_excel(pd_xl_file, 'Messages clés pour évaluation')
 
         module_cover_file = next((x for x in module_files if x.endswith('cover.png') or x.endswith('cover.jpg')), None)
 
@@ -53,7 +60,8 @@ def read_modules(folder) -> list[ConferenceModule]:
                 img_url=f'/static/modules/{module_subfolder}/{module_cover_file}' if module_cover_file is not None else '',
                 slides_path=f'{modules_folder}/{module_subfolder}/{slides_file}',
                 tags=[ModuleTag(category, tag) for category in tags_df.columns for tag in tags_df[category].tolist() if isinstance(tag, str)],
-                has_cover_slide=general_df[1][3]
+                has_cover_slide=general_df[1][3],
+                messages=[ModuleMessage(row.iloc[0], row.iloc[1]) for _, row in messages_df.iterrows()]
             ))
 
     return modules
