@@ -269,18 +269,6 @@ def get_module_by_id(module_id: int) -> ConferenceModule:
 @server.route('/assets/<path:filename>')
 def custom_static(filename):
     return send_from_directory(get_assets_path(), filename)
-
-@server.route('/dynamic-assets/current-conference/cover-slide-part/image/<int:part_index>')
-def dynamic_assets_for_conference_conference_cover_slide_part_image(part_index: int):
-    c = get_current_conference()
-    part = c.parts[part_index]
-    if isinstance(part, CoverSlideConferencePart) and part.image is not None:
-        b = base64.b64decode(part.image.base64.encode('utf-8'))
-        buf = io.BytesIO(b)
-        buf.seek(0)
-        return send_file(buf, mimetype="image/png")
-    else:
-        return "Unable to generate image", 400
     
 @server.route('/dynamic-assets/image_cache/<int:cache_id>')
 def dynamic_assets_from_cache(cache_id: int):
