@@ -128,7 +128,22 @@ def download():
             conference_modules, 
             conference=c, 
             date=datetime.now().strftime("%d/%m/%Y"), 
-            save_path=file
+            pptx_save_path=file
+        )
+
+    return ''
+
+@server.route('/generate-pdf', methods=['POST'])
+def generate_pdf():
+    c = get_current_conference()
+
+    file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.pdf')
+    if file and len(file) > 0:
+        create_conference_slides(
+            conference_modules, 
+            conference=c, 
+            date=datetime.now().strftime("%d/%m/%Y"), 
+            pdf_save_path=file
         )
 
     return ''
@@ -207,7 +222,8 @@ def generate_kit() -> Any:
             conference_modules, 
             conference=conference, 
             date=datetime.now().strftime("%d/%m/%Y"), 
-            save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}.pptx')
+            pptx_save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}.pptx'),
+            pdf_save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}.pdf'),
         )
         print('Generating assessement grid')
         create_assessment_grid(

@@ -8,7 +8,7 @@ from conference import Conference, ModuleConferencePart, CoverSlideConferencePar
 from image_cache import image_cache
 
 
-def create_conference_slides(modules: list[ConferenceModule], conference: Conference, date: str, save_path: str):
+def create_conference_slides(modules: list[ConferenceModule], conference: Conference, date: str, pptx_save_path: str | None = None, pdf_save_path: str | None = None):
   pythoncom.CoInitialize()
   ppt_instance = win32com.client.Dispatch('PowerPoint.Application')
   prs = ppt_instance.Presentations.open(os.path.join(get_assets_path(), "base.slides.pptx"), True, False, False)
@@ -64,11 +64,16 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
   prs.Slides.InsertFromFile(os.path.join(get_assets_path(), "conclusion.slides.pptx"), prs.Slides.Count)
   prs.Slides.Range(current_slide_target + 1).MoveToSectionStart(len(conference.parts) + 2)
 
-  out = os.path.abspath(save_path)
-
-  print(f'Saving conference to: {save_path}')
-  prs.SaveAs(out)
-  print(f'Saved conference')
+  if pptx_save_path is not None:
+    out_pptx = os.path.abspath(pptx_save_path)
+    print(f'Saving conference pptx to: {pptx_save_path}')
+    prs.SaveAs(out_pptx)
+    print(f'Saved conference pptx')
+  if pdf_save_path is not None:
+    out_pdf = os.path.abspath(pdf_save_path)
+    print(f'Saving conference PDF to: {pdf_save_path}')
+    prs.ExportAsFixedFormat(out_pdf, 2, PrintRange=None)
+    print(f'Saved conference PDF')
   prs.Close()
   image_cache.clear_cache()
 
