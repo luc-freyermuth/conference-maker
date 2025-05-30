@@ -26,6 +26,7 @@
                         <span class="hide-on-request">Générer la conférence</span>
                         <span class="show-on-request">Génération en cours...</span>
                     </button>
+                    <button hx-post="generate-grid" hx-swap="none" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Générer la grille d'évaluation</button>
                     <button hx-post="export" hx-swap="none" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Enregistrer</button>
                     <button hx-post="import" hx-target="#conference" hx-swap="innerHTML" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Charger</button>
                     <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-post="reset"

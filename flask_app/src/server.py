@@ -8,12 +8,14 @@ from flask import Flask, render_template, request, send_from_directory, send_fil
 
 from modules import ConferenceModule, read_modules, get_all_tags
 from win32_powerpoint_builder import create_conference_slides
+from assessment_grid_builder import create_assessment_grid
 import webview
 from config import get_conference_and_modules_path, get_gui_path, get_assets_path
 from conference import Conference, serialize_conference, deserialize_conference, ModuleConferencePart, CoverSlideConferencePart, CoverSlideConferencePartImage
 import base64
 import io
 from image_cache import image_cache
+
 
 
 server = Flask(__name__, static_url_path='/static', static_folder=get_conference_and_modules_path(), template_folder=get_gui_path())
@@ -131,6 +133,20 @@ def download():
 
     return ''
 
+@server.route('/generate-grid', methods=['POST'])
+def generate_grid() -> str:
+    c = get_current_conference()
+
+    file = cast(str, webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_grille_d_evaluation.xlsx'))
+    if file and len(file) > 0:
+        create_assessment_grid(
+            conference_modules, 
+            conference=c, 
+            save_path=file
+        )
+
+    return ''
+
 @server.route('/export', methods=['POST'])
 def export():
     serialized = serialize_conference(get_current_conference())
@@ -141,7 +157,7 @@ def export():
 
 @server.route('/import', methods=['POST'])
 def import_conference():
-    files = webview.windows[0].create_file_dialog(webview.OPEN_DIALOG)
+    files = webview.windows[0].create_file_dialog(webview.OPEN_DIALOG, directory=get_conference_and_modules_path())
     if files and len(files) > 0:
         filename = files[0]
         if isinstance(filename, bytes):
