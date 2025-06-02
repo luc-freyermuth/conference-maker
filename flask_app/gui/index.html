@@ -14,31 +14,73 @@
 
 <body class="h-full" hx-ext="morph">
     <div class="flex flex-col h-full">
-        <div class="flex-1 min-h-0 overflow-hidden flex flex-col">
-            <div class="flex flex-row justify-between">
-                <h1>Votre conférence !</h1>
-                <div class="flex flex-row gap-2">
-                    <button hx-post="generate-kit" hx-swap="none" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500 disabled:opacity-50" hx-disabled-elt="this">
-                        <span class="hide-on-request">Générer un kit</span>
-                        <span class="show-on-request">Génération en cours...</span>
-                    </button>
-                    <button hx-post="download" hx-swap="none" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500 disabled:opacity-50" hx-disabled-elt="this">
-                        <span class="hide-on-request">Générer la conférence</span>
-                        <span class="show-on-request">Génération en cours...</span>
-                    </button>
-                    <button hx-post="generate-pdf" hx-swap="none" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500 disabled:opacity-50" hx-disabled-elt="this">
-                        <span class="hide-on-request">Générer PDF</span>
-                        <span class="show-on-request">Génération en cours...</span>
-                    </button>
-                    <button hx-post="generate-grid" hx-swap="none" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Générer la grille d'évaluation</button>
-                    <button hx-post="export" hx-swap="none" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Enregistrer</button>
-                    <button hx-post="import" hx-target="#conference" hx-swap="innerHTML" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500">Charger</button>
-                    <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-post="reset"
-                        hx-target="#conference"
-                        hx-swap="innerHTML">Recommencer</button>
-                    <button class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-post="add-cover-slide-part"
-                        hx-target="#conference"
-                        hx-swap="innerHTML">Ajouter une transition</button>
+        <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-3">
+            <div class="flex flex-row bg-slate-100">
+                <div class="dropdown relative inline-block">
+                    <button class="drop-button bg-slate-100 p-1 px-3 text-left hover:bg-slate-200">Fichier</button>
+                    <div class="dropdown-content absolute hidden flex-col shadow-md bg-white">
+                        <button 
+                            class="bg-slate-200 p-2 text-left hover:bg-slate-300" 
+                            hx-post="reset"  hx-target="#conference" hx-swap="innerHTML"
+                        >
+                            Recommencer
+                        </button>
+                        <button 
+                            class="bg-slate-200 p-2 text-left hover:bg-slate-300" 
+                            hx-post="import"  hx-target="#conference" hx-swap="innerHTML"
+                        >
+                            Ouvrir
+                        </button>
+                        <button 
+                            class="bg-slate-200 p-2 text-left hover:bg-slate-300" 
+                            hx-post="export"  hx-target="#conference" hx-swap="innerHTML"
+                        >
+                            Enregistrer
+                        </button>
+                    </div>
+                </div>
+                <div class="dropdown relative inline-block">
+                    <button class="drop-button bg-slate-100 p-1 px-3 text-left hover:bg-slate-200">Edition</button>
+                    <div class="dropdown-content absolute hidden flex-col shadow-md bg-white">
+                        <button 
+                            class="bg-slate-200 p-2 text-left hover:bg-slate-300" 
+                            hx-post="add-cover-slide-part" hx-target="#conference" hx-swap="innerHTML"
+                        >
+                            Ajouter une transition
+                        </button>
+                    </div>
+                </div>
+                <div class="dropdown relative inline-block">
+                    <button class="drop-button bg-slate-100 p-1 px-3 text-left hover:bg-slate-200">Génération</button>
+                    <div class="dropdown-content absolute hidden flex-col shadow-md bg-white">
+                        <button 
+                            class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
+                            hx-post="download" hx-swap="none" hx-disabled-elt="this"
+                        >
+                            <span class="hide-on-request">Conférence (pptx)</span>
+                            <span class="show-on-request">Génération en cours...</span>
+                        </button>
+                        <button 
+                            class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
+                            hx-post="generate-pdf" hx-swap="none" hx-disabled-elt="this"
+                        >
+                            <span class="hide-on-request">Conférence (pdf)</span>
+                            <span class="show-on-request">Génération en cours...</span>
+                        </button>
+                        <button 
+                            class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
+                            hx-post="generate-grid" hx-swap="none"
+                        >
+                            Grille d'évaluation
+                        </button>
+                        <button 
+                            class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
+                            hx-post="generate-kit" hx-swap="none" hx-disabled-elt="this"
+                        >
+                            <span class="hide-on-request">Kit complet</span>
+                            <span class="show-on-request">Génération en cours...</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 

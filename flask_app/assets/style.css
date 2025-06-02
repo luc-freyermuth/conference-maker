@@ -18,3 +18,15 @@
 .htmx-request.hide-on-request {
     display: none;
 }
+
+.dropdown-content {
+  min-width: 200px;
+}
+
+.dropdown:hover .dropdown-content {
+    display: flex;
+}
+
+.dropdown:hover .drop-button {
+    background-color: rgb(203 213 225 / var(--tw-bg-opacity, 1));
+}
