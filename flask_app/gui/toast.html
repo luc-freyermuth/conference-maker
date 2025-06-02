@@ -1,0 +1,11 @@
+<div id="toast-{{ toast_id }}"  hx-swap-oob="beforeend: #toast-container" class="toast bg-green-200 flex flex-row gap-3 p-3">
+    <div>
+        {{ message }}
+    </div>
+    <button onclick="removeToast({{ toast_id }})">Fermer</button>
+    <script>
+        setTimeout(() => {
+            removeToast({{ toast_id }});
+        }, 3000);
+    </script>
+</div>

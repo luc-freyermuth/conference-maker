@@ -30,3 +30,17 @@
 .dropdown:hover .drop-button {
     background-color: rgb(203 213 225 / var(--tw-bg-opacity, 1));
 }
+
+.toast {
+    animation: slideIn .25s ease-in-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}

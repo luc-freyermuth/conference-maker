@@ -168,7 +168,7 @@ def export():
     file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.focon')
     with open(file, "w") as text_file:
         text_file.write(serialized)
-    return ''
+    return render_oob_toast('Fichier focon enregistré avec succès !')
 
 @server.route('/import', methods=['POST'])
 def import_conference():
@@ -303,6 +303,13 @@ def get_module_by_id(module_id: int) -> ConferenceModule:
     if module is None:
         raise ValueError(f'module with id {module_id} not found')
     return module
+
+toast_id = 0
+
+def render_oob_toast(message: str) -> str:
+    global toast_id
+    toast_id += 1
+    return render_template('toast.html', message=message, toast_id=toast_id)
 
 @server.route('/assets/<path:filename>')
 def custom_static(filename):
