@@ -9,6 +9,11 @@
 
         {{ stats.duration_minutes }} minutes
 
+        <charts-js 
+            style="display:block; width: 400px; height: 400px;" 
+            config='{{ chart_config }}'
+        ></charts-js>
+
         {% for category_tags_repartition in stats.categories_tags_repartition %}
         <!-- <div class="py-2">
             <div class="font-semibold">{{ category_tags_repartition.category }}</div>

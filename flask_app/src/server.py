@@ -15,6 +15,7 @@ from conference import Conference, serialize_conference, deserialize_conference,
 import base64
 import io
 from image_cache import image_cache
+import json
 
 
 
@@ -267,15 +268,37 @@ def render_conference(c: Conference):
         render_module_conference_part(part, get_module_by_id(part.module_id), idx, len(c.parts)) if isinstance(part, ModuleConferencePart) else render_cover_slide_conference_part(part, idx, len(c.parts))
         for idx, part in enumerate(c.parts)
     ]
-    total_duration = np.sum([get_module_by_id(cast(ModuleConferencePart, part).module_id).duration_minutes for part in filter(lambda p: isinstance(p, ModuleConferencePart), c.parts)])
+    total_duration = sum([get_module_by_id(cast(ModuleConferencePart, part).module_id).duration_minutes for part in filter(lambda p: isinstance(p, ModuleConferencePart), c.parts)])
 
+
+    modules_parts = [part for part in c.parts if isinstance(part, ModuleConferencePart)]
+    modules = [get_module_by_id(part.module_id) for part in modules_parts]
+    tags_with_duration = []
+    for module in modules:
+        for tag in module.tags:
+            tags_with_duration.append({ "category:": tag.category, "tag": tag.tag, "duration": module.duration_minutes })
+
+    by_category = [ { "category": k, "tags": [{ "tag": k1, "duration": sum([t.get("duration") for t in v1]) } for k1, v1 in groupby(v, lambda t:t.get("tag"))] } for k, v in groupby(tags_with_duration, lambda t:t.get("category")) ]
     # conference_module_tags = ConferenceModuleTag.objects.order_by('tag__category', 'tag__name').filter(conference_module__in=[module.id for module in modules]).select_related('tag', 'tag__category', 'conference_module')
     # tags_grouped_by_category = groupby([{ "tag": cm.tag, "duration_minutes": cm.tag_category_importance * cm.conference_module.duration_minutes } for cm in conference_module_tags], lambda t:t["tag"].category.name)
     # categories_tags_repartition = [ { "category": category, "tags": [{"tag": tag, "duration_minutes": np.sum([occ["duration_minutes"] for occ in tag_details])} for tag, tag_details in groupby(tags_details, lambda item: item["tag"].name)] } for category, tags_details in tags_grouped_by_category ]
+    
+    chart_config = {
+        "type":"bar",
+        "data": {
+            "labels":["A"],
+            "datasets":[{"label":"Easy as","data":[total_duration]}]
+        },
+        "options":{
+            "responsive":True, 
+            "maintainAspectRatio": True
+        }
+    }
+    
     return render_template('conference.html', conference_title=c.title, conference_subtitle=c.subtitle, parts=parts, stats={
         "duration_minutes": total_duration,
-        "categories_tags_repartition": []
-    })
+        "categories_tags_repartition": [],
+    }, chart_config=json.dumps(chart_config))
 
 def render_module_conference_part(cp: ModuleConferencePart, module: ConferenceModule, index: int, total: int) -> str:
     return render_template('module_conference_part.html', 

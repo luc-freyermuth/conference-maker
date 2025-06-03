@@ -58,7 +58,7 @@ def read_modules(folder) -> list[ConferenceModule]:
 
         module_cover_file = next((x for x in module_files if x.endswith('cover.png') or x.endswith('cover.jpg')), None)
 
-
+        pd_xl_file.close()
 
         if general_df[1][4] != 'Caché':
             modules.append(ConferenceModule(
