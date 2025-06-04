@@ -276,29 +276,61 @@ def render_conference(c: Conference):
     tags_with_duration = []
     for module in modules:
         for tag in module.tags:
-            tags_with_duration.append({ "category:": tag.category, "tag": tag.tag, "duration": module.duration_minutes })
-
-    by_category = [ { "category": k, "tags": [{ "tag": k1, "duration": sum([t.get("duration") for t in v1]) } for k1, v1 in groupby(v, lambda t:t.get("tag"))] } for k, v in groupby(tags_with_duration, lambda t:t.get("category")) ]
-    # conference_module_tags = ConferenceModuleTag.objects.order_by('tag__category', 'tag__name').filter(conference_module__in=[module.id for module in modules]).select_related('tag', 'tag__category', 'conference_module')
-    # tags_grouped_by_category = groupby([{ "tag": cm.tag, "duration_minutes": cm.tag_category_importance * cm.conference_module.duration_minutes } for cm in conference_module_tags], lambda t:t["tag"].category.name)
-    # categories_tags_repartition = [ { "category": category, "tags": [{"tag": tag, "duration_minutes": np.sum([occ["duration_minutes"] for occ in tag_details])} for tag, tag_details in groupby(tags_details, lambda item: item["tag"].name)] } for category, tags_details in tags_grouped_by_category ]
+            tags_with_duration.append({ "category": tag.category, "tag": tag.tag, "duration": module.duration_minutes })
+    tags_with_duration.sort(key=lambda x:x["tag"])
+    tags_with_duration.sort(key=lambda x:x["category"])
+        
+    by_category = [ { "category": k, "tags": [{ "name": k1, "duration": sum([t.get("duration") for t in v1]) } for k1, v1 in groupby(v, lambda t:t.get("tag"))] } for k, v in groupby(tags_with_duration, lambda t:t.get("category")) ]
     
-    chart_config = {
-        "type":"bar",
-        "data": {
-            "labels":["A"],
-            "datasets":[{"label":"Easy as","data":[total_duration]}]
-        },
-        "options":{
-            "responsive":True, 
-            "maintainAspectRatio": True
-        }
-    }
+    chart_configs = []
+    for category in by_category:
+        chart_config = {
+                "type":"bar",
+                "data": {
+                    "labels":[],
+                    "datasets":[{"label":"Minutes","data":[]}]
+                },
+                "options":{
+                    "responsive":True, 
+                    "maintainAspectRatio": False,
+                    "plugins": {
+                        "title": {
+                            "display": True,
+                            "text": category["category"]
+                        },
+                        "legend": {
+                            "display": False
+                        }
+                    },
+                    "scales": {
+                        "y": {
+                            "title": {
+                                "display": True,
+                                "text": "Minutes"
+                            }
+                        },
+                        "x": {
+                            "ticks": {
+                                "display": len(category["tags"]) < 8,
+                                "maxRotation": 90,
+                                "minRotation": 0
+                            }
+                        }
+                    }
+                }
+            }
+        
+        tags: list[dict] = category["tags"]
+        tags.sort(key=lambda t:t["duration"])
+        tags.reverse()
+        chart_config["data"]["labels"] = [tag["name"] for tag in tags]
+        chart_config["data"]["datasets"][0]["data"] = [tag["duration"] for tag in tags]
+        chart_configs.append(chart_config)
     
     return render_template('conference.html', conference_title=c.title, conference_subtitle=c.subtitle, parts=parts, stats={
         "duration_minutes": total_duration,
         "categories_tags_repartition": [],
-    }, chart_config=json.dumps(chart_config))
+    }, chart_configs=[json.dumps(chart_config) for chart_config in chart_configs])
 
 def render_module_conference_part(cp: ModuleConferencePart, module: ConferenceModule, index: int, total: int) -> str:
     return render_template('module_conference_part.html', 

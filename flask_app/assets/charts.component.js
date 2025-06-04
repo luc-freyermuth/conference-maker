@@ -53,9 +53,8 @@ class ChartElement extends HTMLElement {
       this.#chart.data = config.data ?? {};
       this.#chart.options = config.options ?? {};
       this.#chart.type = config.type;
-      this.#chart.update();
+      this.#chart.update('none');
     }
-    console.log(config)
   }
 }
 
