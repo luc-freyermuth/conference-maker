@@ -132,7 +132,7 @@ def download():
             pptx_save_path=file
         )
 
-    return ''
+    return render_oob_toast('Conférence générée avec succès !')
 
 @server.route('/generate-pdf', methods=['POST'])
 def generate_pdf():
@@ -147,7 +147,7 @@ def generate_pdf():
             pdf_save_path=file
         )
 
-    return ''
+    return render_oob_toast('PDF générée avec succès !')
 
 @server.route('/generate-grid', methods=['POST'])
 def generate_grid() -> str:
@@ -161,7 +161,7 @@ def generate_grid() -> str:
             save_path=file
         )
 
-    return ''
+    return render_oob_toast("Grille d'évaluation générée avec succès !")
 
 @server.route('/export', methods=['POST'])
 def export():
@@ -235,7 +235,7 @@ def generate_kit() -> Any:
         print(f'=== Files generated successfully for focon_file: {focon_file_path} ===')
 
     print('Kit generated successfully')
-    return '', 204
+    return render_oob_toast('Kit généré avec succès !'), 204
 
 @server.route('/search-modules', methods=['GET'])
 def search_modules():
