@@ -12,7 +12,7 @@
         <div class="grid grid-cols-2 gap-3">
              {% for chart_config in chart_configs %}
                 <charts-js
-                    style="display:block; height: 250px;" 
+                    style="display:block; height: 200px;" 
                     config='{{ chart_config }}'
                     {% if loop.last %}
                         class="col-span-2"
