@@ -273,7 +273,7 @@ def render_conference(c: Conference):
 
     modules_parts = [part for part in c.parts if isinstance(part, ModuleConferencePart)]
     modules = [get_module_by_id(part.module_id) for part in modules_parts]
-    tags_with_duration = []
+    tags_with_duration: list[dict] = []
     for module in modules:
         for tag in module.tags:
             tags_with_duration.append({ "category": tag.category, "tag": tag.tag, "duration": module.duration_minutes })
@@ -282,9 +282,9 @@ def render_conference(c: Conference):
         
     by_category = [ { "category": k, "tags": [{ "name": k1, "duration": sum([t.get("duration") for t in v1]) } for k1, v1 in groupby(v, lambda t:t.get("tag"))] } for k, v in groupby(tags_with_duration, lambda t:t.get("category")) ]
     
-    chart_configs = []
+    chart_configs: list[dict] = []
     for category in by_category:
-        chart_config = {
+        chart_config: dict = {
                 "type":"bar",
                 "data": {
                     "labels":[],
