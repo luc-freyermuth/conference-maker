@@ -6,6 +6,7 @@ from config import get_assets_path
 from modules import ConferenceModule
 from conference import Conference, ModuleConferencePart, CoverSlideConferencePart
 from image_cache import image_cache
+from typing import Any
 
 
 def create_conference_slides(modules: list[ConferenceModule], conference: Conference, date: str, pptx_save_path: str | None = None, pdf_save_path: str | None = None):
@@ -46,9 +47,13 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
         prs.Slides.Item(current_slide_target).CustomLayout = target_layout
         slide_sources = [source for source in module.sources if source.slide_index1 == current_slide_src]
         if len(slide_sources) > 0:
-          prs.Slides.Item(current_slide_target).NotesPage.Shapes(1).TextFrame.TextRange.InsertAfter("\n\n-----------------------------------------------------------------------------------------------------------------------------------\n\nSources :\n")
+          notes_text_frame: Any = None
+          for shape_index in range(1, prs.Slides.Item(current_slide_target).NotesPage.Shapes.Count + 1):
+            if prs.Slides.Item(current_slide_target).NotesPage.Shapes(shape_index).PlaceholderFormat.Type == 2:
+              notes_text_frame = prs.Slides.Item(current_slide_target).NotesPage.Shapes(shape_index)
+          notes_text_frame.TextFrame.TextRange.InsertAfter("\n\n-----------------------------------------------------------------------------------------------------------------------------------\n\nSources :\n")
           for slide_source in slide_sources:
-            prs.Slides.Item(current_slide_target).NotesPage.Shapes(1).TextFrame.TextRange.InsertAfter(f'{slide_source.title} ({slide_source.value}) : { slide_source.source }\n')
+            notes_text_frame.TextFrame.TextRange.InsertAfter(f'{slide_source.title} {f'({slide_source.value})' if slide_source.value else ''} : { slide_source.source }\n')
       prs_src.Close()
     if isinstance(part, CoverSlideConferencePart):
       current_slide_target = current_slide_target + 1

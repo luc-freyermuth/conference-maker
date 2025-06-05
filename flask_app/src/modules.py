@@ -24,7 +24,7 @@ class ModuleMessage:
 class ModuleSource:
     slide_index1: int
     title: str
-    value: str
+    value: str | None
     source: str
     expiry_date: date | None
 
@@ -82,7 +82,13 @@ def read_modules(folder) -> list[ConferenceModule]:
                 tags=[ModuleTag(category, tag) for category in tags_df.columns for tag in tags_df[category].tolist() if isinstance(tag, str)],
                 has_cover_slide=general_df[1][3],
                 messages=[ModuleMessage(row.iloc[0], row.iloc[1]) for _, row in messages_df.iterrows()],
-                sources=[ModuleSource(slide_index1=row.iloc[0], title=row.iloc[1], value=row.iloc[2], source=row.iloc[3], expiry_date=row.iloc[4].date() if not pd.isna(row.iloc[4]) else None) for _, row in sources_df.iterrows()],
+                sources=[ModuleSource(
+                    slide_index1=row.iloc[0], 
+                    title=row.iloc[1], 
+                    value=row.iloc[2] if not pd.isna(row.iloc[2]) else None, 
+                    source=row.iloc[3], 
+                    expiry_date=row.iloc[4].date() if not pd.isna(row.iloc[4]) else None
+                ) for _, row in sources_df.iterrows()],
                 slides_count=slides_count
             ))
 
