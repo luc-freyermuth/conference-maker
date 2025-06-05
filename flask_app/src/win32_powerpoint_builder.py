@@ -44,6 +44,11 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
         print(f'slide {current_slide_src} from pres {os.path.abspath(module.slides_path)} layout_id : {src_layout_id}')
         target_layout = find_custom_layout_with_id(prs, src_layout_id)
         prs.Slides.Item(current_slide_target).CustomLayout = target_layout
+        slide_sources = [source for source in module.sources if source.slide_index1 == current_slide_src]
+        if len(slide_sources) > 0:
+          prs.Slides.Item(current_slide_target).NotesPage.Shapes(1).TextFrame.TextRange.InsertAfter("\n\n-----------------------------------------------------------------------------------------------------------------------------------\n\nSources :\n")
+          for slide_source in slide_sources:
+            prs.Slides.Item(current_slide_target).NotesPage.Shapes(1).TextFrame.TextRange.InsertAfter(f'{slide_source.title} ({slide_source.value}) : { slide_source.source }\n')
       prs_src.Close()
     if isinstance(part, CoverSlideConferencePart):
       current_slide_target = current_slide_target + 1

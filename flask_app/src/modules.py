@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from itertools import groupby
 from pptx import Presentation
+from datetime import date
 
 @dataclass
 class ModuleTag:
@@ -20,6 +21,14 @@ class ModuleMessage:
     content: str
 
 @dataclass
+class ModuleSource:
+    slide_index1: int
+    title: str
+    value: str
+    source: str
+    expiry_date: date | None
+
+@dataclass
 class ConferenceModule:
     id: int
     title: str
@@ -30,6 +39,7 @@ class ConferenceModule:
     tags: list[ModuleTag]
     has_cover_slide: bool
     messages: list[ModuleMessage]
+    sources: list[ModuleSource]
     slides_count: int
 
 
@@ -55,6 +65,7 @@ def read_modules(folder) -> list[ConferenceModule]:
         general_df = pd.read_excel(pd_xl_file, 'General', header=None)
         tags_df = pd.read_excel(pd_xl_file, 'Etiquettes')
         messages_df = pd.read_excel(pd_xl_file, 'Messages clés pour évaluation')
+        sources_df = pd.read_excel(pd_xl_file, 'Données & sources')
 
         module_cover_file = next((x for x in module_files if x.endswith('cover.png') or x.endswith('cover.jpg')), None)
 
@@ -71,6 +82,7 @@ def read_modules(folder) -> list[ConferenceModule]:
                 tags=[ModuleTag(category, tag) for category in tags_df.columns for tag in tags_df[category].tolist() if isinstance(tag, str)],
                 has_cover_slide=general_df[1][3],
                 messages=[ModuleMessage(row.iloc[0], row.iloc[1]) for _, row in messages_df.iterrows()],
+                sources=[ModuleSource(slide_index1=row.iloc[0], title=row.iloc[1], value=row.iloc[2], source=row.iloc[3], expiry_date=row.iloc[4].date() if not pd.isna(row.iloc[4]) else None) for _, row in sources_df.iterrows()],
                 slides_count=slides_count
             ))
 
