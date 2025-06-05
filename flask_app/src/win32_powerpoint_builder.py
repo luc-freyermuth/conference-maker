@@ -39,12 +39,16 @@ def create_conference_slides(modules: list[ConferenceModule], conference: Confer
           prs.Slides.Item(current_slide_target + 1).Delete()
           continue
         current_slide_target = current_slide_target + 1
+
+        # set layout in target prs using layout ids (int prefixes in layout names)
         src_layout_id = extract_layout_id_from_layout_name(prs_src.Slides.Item(current_slide_src).CustomLayout.Name)
         if src_layout_id is None:
           raise ValueError(f'src layout has no id ({ module.id }, { module.title }, { current_slide_src }). You should use premade slide layouts for your conference.')
         print(f'slide {current_slide_src} from pres {os.path.abspath(module.slides_path)} layout_id : {src_layout_id}')
         target_layout = find_custom_layout_with_id(prs, src_layout_id)
         prs.Slides.Item(current_slide_target).CustomLayout = target_layout
+
+        # add sources at the bottom of slides notes
         slide_sources = [source for source in module.sources if source.slide_index1 == current_slide_src]
         if len(slide_sources) > 0:
           notes_text_frame: Any = None
