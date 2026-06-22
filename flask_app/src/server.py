@@ -1,5 +1,4 @@
 from itertools import groupby
-import numpy as np
 from datetime import datetime
 from typing import Tuple, cast, Any
 import os
