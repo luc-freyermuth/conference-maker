@@ -28,17 +28,22 @@
                             Recommencer
                         </button>
                         <button 
-                            class="bg-slate-200 p-2 text-left hover:bg-slate-300" 
-                            hx-post="import"  hx-target="#conference" hx-swap="innerHTML"
+                            class="bg-slate-200 p-2 text-left hover:bg-slate-300"
+                            onclick="document.querySelector('#file-open').click()"
                         >
                             Ouvrir
+                            <form  hx-trigger="change" hx-post="import" hx-target="#conference" hx-swap="innerHTML" hx-encoding="multipart/form-data" hidden>
+                                <input type='file' id="file-open" name="file" />
+                            </form>   
                         </button>
-                        <button 
-                            class="bg-slate-200 p-2 text-left hover:bg-slate-300" 
-                            hx-post="export" hx-swap="none"
-                        >
-                            Enregistrer
-                        </button>
+                        <a href="export" target="_blank">
+                            <button 
+                                class="bg-slate-200 p-2 text-left hover:bg-slate-300 w-full"
+                            >
+                                Enregistrer
+                            </button>
+                        </a>
+                        
                     </div>
                 </div>
                 <div class="dropdown relative inline-block">

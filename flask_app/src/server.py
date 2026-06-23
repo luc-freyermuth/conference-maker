@@ -15,6 +15,9 @@ import base64
 import io
 from image_cache import image_cache
 import json
+from flask import send_file
+from io import BytesIO
+
 
 
 
@@ -162,23 +165,18 @@ def generate_grid() -> str:
 
     return render_oob_toast("Grille d'évaluation générée avec succès !")
 
-@server.route('/export', methods=['POST'])
+@server.route('/export', methods=['GET'])
 def export():
     serialized = serialize_conference(get_current_conference())
-    file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.focon')
-    with open(file, "w") as text_file:
-        text_file.write(serialized)
-    return render_oob_toast('Fichier focon enregistré avec succès !')
+    bytes_io = BytesIO(serialized.encode('utf-8'))
+    return send_file(bytes_io, download_name='ma_conference.focon', mimetype='text/plain', as_attachment=True)
 
 @server.route('/import', methods=['POST'])
 def import_conference():
-    files = webview.windows[0].create_file_dialog(webview.OPEN_DIALOG, directory=get_conference_and_modules_path())
-    if files and len(files) > 0:
-        filename = files[0]
-        if isinstance(filename, bytes):
-            filename = filename.decode('utf-8')
-        with open(filename) as file:
-            set_current_conference(deserialize_conference(file.read()))
+    file = request.files.get("file")
+    if file is None:
+        return 'No file was sent', 400
+    set_current_conference(deserialize_conference(file.read().decode('utf-8')))
     return render_conference(get_current_conference())
 
 @server.route('/generate-kit', methods=['POST'])
