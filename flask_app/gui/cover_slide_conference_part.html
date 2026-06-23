@@ -13,12 +13,18 @@
                 {% if image_url  %}
                     <img style="max-height: 100px;" src="{{ image_url }}" />
                 {% endif %}
-                <button hx-post="/cover-slide-part/{{index}}/pick-image" class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500" hx-target="#conference-part-{{index}}" hx-swap="morph:outerHTML">
+                <button 
+                    class="bg-slate-200 p-2 rounded hover:ring-2 ring-slate-500"
+                    onclick="document.querySelector('#file-cover-slide-{{index}}').click()"
+                >
                     {% if image_url  %} 
                         Modifier l'illustration
                     {% else %}
                         Ajouter une Illustration
                     {% endif %}
+                    <form  hx-trigger="change" hx-post="/cover-slide-part/{{index}}/pick-image" hx-target="#conference-part-{{index}}" hx-swap="morph:outerHTML" hx-encoding="multipart/form-data" hidden>
+                        <input type='file' id="file-cover-slide-{{index}}" name="file" />
+                    </form>   
                 </button>
             </div>
         </div>

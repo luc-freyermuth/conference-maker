@@ -1,14 +1,12 @@
 from itertools import groupby
 from datetime import datetime
-from typing import Tuple, cast, Any
-import os
+from typing import Tuple, cast
 
 from flask import Flask, render_template, request, send_from_directory, send_file
 
 from modules import ConferenceModule, read_modules, get_all_tags
 from win32_powerpoint_builder import create_conference_slides
 from assessment_grid_builder import create_assessment_grid
-import webview
 from config import get_conference_and_modules_path, get_gui_path, get_assets_path
 from conference import Conference, serialize_conference, deserialize_conference, ModuleConferencePart, CoverSlideConferencePart, CoverSlideConferencePartImage
 import base64
@@ -97,21 +95,28 @@ def cover_slide_part_pick_image(part_index: int):
     part_to_edit = c.parts[part_index]
     if (not isinstance(part_to_edit, CoverSlideConferencePart)):
         raise ValueError('Part is not a cover slide')
-    
-    files = webview.windows[0].create_file_dialog(webview.OPEN_DIALOG)
-    if files and len(files) > 0:
-        filename = files[0]
-        if isinstance(filename, bytes):
-            filename = filename.decode('utf-8')
-        if not (filename.endswith('.jpg') or filename.endswith('.png')):
-            raise ValueError('file is not an image')
-        with open(filename, 'rb') as file:
-            base64_bytes = base64.b64encode(file.read())
-            base64_string = base64_bytes.decode()
-            part_to_edit.image = CoverSlideConferencePartImage(base64=base64_string)
-            c.parts[part_index] = part_to_edit
-            set_current_conference(c)
+    file = request.files.get("file")
+    if not file:
+        raise ValueError('no file was sent')
+    filename = file.filename
+    if not filename:
+        raise ValueError('file has no name')
+    if not (filename.endswith('.jpg') or filename.endswith('.png')):
+        raise ValueError('file is not an image')
+    base64_bytes = base64.b64encode(file.read())
+    base64_string = base64_bytes.decode()
+    part_to_edit.image = CoverSlideConferencePartImage(base64=base64_string)
+    c.parts[part_index] = part_to_edit
+    set_current_conference(c)
+           
+        
     return render_cover_slide_conference_part(part_to_edit, index=part_index, total=len(c.parts))
+
+    file = request.files.get("file")
+    if file is None:
+        return 'No file was sent', 400
+    set_current_conference(deserialize_conference(file.read().decode('utf-8')))
+    return render_conference(get_current_conference())
 
 @server.route('/module-part/<int:part_index>/hide-cover-slide', methods=['PUT'])
 def set_module_part_hide_cover_slide(part_index: int):
@@ -191,60 +196,60 @@ def import_conference():
     set_current_conference(deserialize_conference(file.read().decode('utf-8')))
     return render_conference(get_current_conference())
 
-@server.route('/generate-kit', methods=['POST'])
-def generate_kit() -> Any:
-    dirs = webview.windows[0].create_file_dialog(webview.FOLDER_DIALOG, directory=get_conference_and_modules_path())
-    if not (dirs and len(dirs) > 0):
-        return "Did not pick a conference directory", 400
-    source_dir = dirs[0]
-    if isinstance(source_dir, bytes):
-        source_dir = source_dir.decode('utf-8')
-    print(f'Will generate kit from directory: {source_dir}')
+# @server.route('/generate-kit', methods=['POST'])
+# def generate_kit() -> Any:
+#     dirs = webview.windows[0].create_file_dialog(webview.FOLDER_DIALOG, directory=get_conference_and_modules_path())
+#     if not (dirs and len(dirs) > 0):
+#         return "Did not pick a conference directory", 400
+#     source_dir = dirs[0]
+#     if isinstance(source_dir, bytes):
+#         source_dir = source_dir.decode('utf-8')
+#     print(f'Will generate kit from directory: {source_dir}')
 
-    kit_destination: str = cast(str, webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='mon_kit'))
+#     kit_destination: str = cast(str, webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='mon_kit'))
 
-    if not kit_destination:
-        return "Did not pick a destination", 400
+#     if not kit_destination:
+#         return "Did not pick a destination", 400
 
-    (kit_dir, kit_name) = os.path.split(kit_destination)
-    print(f'Will generate kit with name "{kit_name}" in directory: {kit_dir}')
+#     (kit_dir, kit_name) = os.path.split(kit_destination)
+#     print(f'Will generate kit with name "{kit_name}" in directory: {kit_dir}')
 
-    if os.path.isdir(kit_destination):
-        return "Kit already exists", 400
+#     if os.path.isdir(kit_destination):
+#         return "Kit already exists", 400
 
-    files_in_src = [f for f in os.listdir(source_dir) if (os.path.isfile(os.path.join(source_dir, f)))]
-    print(f'Files found in kit source directory: {files_in_src}')
-    focon_files = [f for f in files_in_src if f.endswith('.focon')]
-    print(f'Kit will be generated for focon files: {focon_files}')
+#     files_in_src = [f for f in os.listdir(source_dir) if (os.path.isfile(os.path.join(source_dir, f)))]
+#     print(f'Files found in kit source directory: {files_in_src}')
+#     focon_files = [f for f in files_in_src if f.endswith('.focon')]
+#     print(f'Kit will be generated for focon files: {focon_files}')
 
-    print(f'Creating kit directory: {kit_destination}')
-    os.makedirs(kit_destination)
+#     print(f'Creating kit directory: {kit_destination}')
+#     os.makedirs(kit_destination)
 
-    for focon_file in focon_files:
-        conference_name = focon_file.split('.')[0]
-        focon_file_path = os.path.join(source_dir, focon_file)
-        print(f'=== Generating files for focon_file: {focon_file_path} ===')
-        conference: Conference
-        with open(focon_file_path) as file:
-            conference = deserialize_conference(file.read())
-        print('Generating conference')
-        create_conference_slides(
-            conference_modules, 
-            conference=conference, 
-            date=datetime.now().strftime("%d/%m/%Y"), 
-            pptx_save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}.pptx'),
-            pdf_save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}.pdf'),
-        )
-        print('Generating assessement grid')
-        create_assessment_grid(
-            conference_modules, 
-            conference=conference, 
-            save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}_Grille_d_evaluation.xlsx')
-        )
-        print(f'=== Files generated successfully for focon_file: {focon_file_path} ===')
+#     for focon_file in focon_files:
+#         conference_name = focon_file.split('.')[0]
+#         focon_file_path = os.path.join(source_dir, focon_file)
+#         print(f'=== Generating files for focon_file: {focon_file_path} ===')
+#         conference: Conference
+#         with open(focon_file_path) as file:
+#             conference = deserialize_conference(file.read())
+#         print('Generating conference')
+#         create_conference_slides(
+#             conference_modules, 
+#             conference=conference, 
+#             date=datetime.now().strftime("%d/%m/%Y"), 
+#             pptx_save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}.pptx'),
+#             pdf_save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}.pdf'),
+#         )
+#         print('Generating assessement grid')
+#         create_assessment_grid(
+#             conference_modules, 
+#             conference=conference, 
+#             save_path=os.path.join(kit_destination, f'{conference_name}_{datetime.now().strftime("%Y.%m")}_Grille_d_evaluation.xlsx')
+#         )
+#         print(f'=== Files generated successfully for focon_file: {focon_file_path} ===')
 
-    print('Kit generated successfully')
-    return render_oob_toast('Kit généré avec succès !'), 204
+#     print('Kit generated successfully')
+#     return render_oob_toast('Kit généré avec succès !'), 204
 
 @server.route('/search-modules', methods=['GET'])
 def search_modules():
