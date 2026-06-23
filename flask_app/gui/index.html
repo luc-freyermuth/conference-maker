@@ -60,13 +60,14 @@
                 <div class="dropdown relative inline-block">
                     <button class="drop-button bg-slate-100 p-1 px-3 text-left hover:bg-slate-200">Génération</button>
                     <div class="dropdown-content absolute hidden flex-col shadow-md bg-white">
-                        <button 
-                            class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
-                            hx-post="download" hx-swap="none" hx-disabled-elt="this"
-                        >
-                            <span class="hide-on-request">Conférence (pptx)</span>
-                            <span class="show-on-request">Génération en cours...</span>
-                        </button>
+                        <a href="download" target="_blank">
+                            <button 
+                                 class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50 w-full" 
+                            >
+                                <span class="hide-on-request">Conférence (pptx)</span>
+                                <span class="show-on-request">Génération en cours...</span>
+                            </button>
+                        </a>
                         <button 
                             class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
                             hx-post="generate-pdf" hx-swap="none" hx-disabled-elt="this"

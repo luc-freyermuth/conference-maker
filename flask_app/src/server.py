@@ -17,6 +17,7 @@ from image_cache import image_cache
 import json
 from flask import send_file
 from io import BytesIO
+from text_utils import get_valid_filename
 
 
 
@@ -26,6 +27,9 @@ server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
 
 conference_modules: list[ConferenceModule] = read_modules(get_conference_and_modules_path())
 conference = Conference(title='Ma conférence', subtitle='Accroche', parts=[])
+
+if not os.path.exists("out"):
+    os.makedirs("out")
 
 @server.route('/')
 def landing():
@@ -121,20 +125,20 @@ def set_module_part_hide_cover_slide(part_index: int):
     set_current_conference(c)
     return render_module_conference_part(part_to_edit, get_module_by_id(part_to_edit.module_id), index=part_index, total=len(c.parts))
 
-@server.route('/download', methods=['POST'])
+@server.route('/download', methods=['GET'])
 def download():
     c = get_current_conference()
 
-    file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.pptx')
-    if file and len(file) > 0:
-        create_conference_slides(
-            conference_modules, 
-            conference=c, 
-            date=datetime.now().strftime("%d/%m/%Y"), 
-            pptx_save_path=file
-        )
+    file = f'out/{get_valid_filename(c.title)}.pptx'
 
-    return render_oob_toast('Conférence générée avec succès !')
+    create_conference_slides(
+        conference_modules, 
+        conference=c, 
+        date=datetime.now().strftime("%d/%m/%Y"), 
+        pptx_save_path=file
+    )
+
+    return send_file(os.path.abspath(file), as_attachment=True)
 
 @server.route('/generate-pdf', methods=['POST'])
 def generate_pdf():
