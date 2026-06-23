@@ -129,8 +129,6 @@ def download():
     c = get_current_conference()
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        print('created temporary directory', tmpdirname)
-
         file = f'{tmpdirname}/{get_valid_filename(c.title)}.pptx'
 
         create_conference_slides(
@@ -143,12 +141,14 @@ def download():
         with open(file, 'rb') as conference_file:
             return send_file(BytesIO(conference_file.read()),  download_name=f'{get_valid_filename(c.title)}.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation', as_attachment=True)
 
-@server.route('/generate-pdf', methods=['POST'])
+@server.route('/generate-pdf', methods=['GET'])
 def generate_pdf():
     c = get_current_conference()
 
-    file = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_conference.pdf')
-    if file and len(file) > 0:
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        filename = f'{get_valid_filename(c.title)}.pdf'
+        file = f'{tmpdirname}/{filename}'
+
         create_conference_slides(
             conference_modules, 
             conference=c, 
@@ -156,7 +156,8 @@ def generate_pdf():
             pdf_save_path=file
         )
 
-    return render_oob_toast('PDF générée avec succès !')
+        with open(file, 'rb') as conference_file:
+            return send_file(BytesIO(conference_file.read()),  download_name=filename, mimetype='application/pdf', as_attachment=True)
 
 @server.route('/generate-grid', methods=['POST'])
 def generate_grid() -> str:

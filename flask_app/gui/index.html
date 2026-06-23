@@ -68,19 +68,21 @@
                                 <span class="show-on-request">Génération en cours...</span>
                             </button>
                         </a>
-                        <button 
-                            class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
-                            hx-post="generate-pdf" hx-swap="none" hx-disabled-elt="this"
-                        >
-                            <span class="hide-on-request">Conférence (pdf)</span>
-                            <span class="show-on-request">Génération en cours...</span>
-                        </button>
+                        <a href="generate-pdf" target="_blank">
+                            <button 
+                                 class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50 w-full" 
+                            >
+                                <span class="hide-on-request">Conférence (pdf)</span>
+                                <span class="show-on-request">Génération en cours...</span>
+                            </button>
+                        </a>
                         <button 
                             class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
                             hx-post="generate-grid" hx-swap="none"
                         >
                             Grille d'évaluation
                         </button>
+                        <!--
                         <button 
                             class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
                             hx-post="generate-kit" hx-swap="none" hx-disabled-elt="this"
@@ -88,6 +90,8 @@
                             <span class="hide-on-request">Kit complet</span>
                             <span class="show-on-request">Génération en cours...</span>
                         </button>
+                        -->
+                        
                     </div>
                 </div>
             </div>
