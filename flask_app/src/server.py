@@ -129,7 +129,8 @@ def download():
     c = get_current_conference()
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        file = f'{tmpdirname}/{get_valid_filename(c.title)}.pptx'
+        filename = f'{get_valid_filename(c.title)}.pptx'
+        file = f'{tmpdirname}/{filename}'
 
         create_conference_slides(
             conference_modules, 
@@ -139,7 +140,7 @@ def download():
         )
 
         with open(file, 'rb') as conference_file:
-            return send_file(BytesIO(conference_file.read()),  download_name=f'{get_valid_filename(c.title)}.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation', as_attachment=True)
+            return send_file(BytesIO(conference_file.read()),  download_name=filename, mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation', as_attachment=True)
 
 @server.route('/generate-pdf', methods=['GET'])
 def generate_pdf():
@@ -159,19 +160,22 @@ def generate_pdf():
         with open(file, 'rb') as conference_file:
             return send_file(BytesIO(conference_file.read()),  download_name=filename, mimetype='application/pdf', as_attachment=True)
 
-@server.route('/generate-grid', methods=['POST'])
-def generate_grid() -> str:
+@server.route('/generate-grid', methods=['GET'])
+def generate_grid():
     c = get_current_conference()
 
-    file = cast(str, webview.windows[0].create_file_dialog(webview.SAVE_DIALOG, save_filename='ma_grille_d_evaluation.xlsx'))
-    if file and len(file) > 0:
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        filename = f'{get_valid_filename(c.title)}_grille_evaluation.xlsx'
+        file = f'{tmpdirname}/{filename}'
+
         create_assessment_grid(
             conference_modules, 
             conference=c, 
             save_path=file
         )
 
-    return render_oob_toast("Grille d'évaluation générée avec succès !")
+        with open(file, 'rb') as grid_file:
+            return send_file(BytesIO(grid_file.read()),  download_name=filename, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True)
 
 @server.route('/export', methods=['GET'])
 def export():

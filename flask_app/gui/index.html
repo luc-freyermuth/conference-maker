@@ -61,27 +61,20 @@
                     <button class="drop-button bg-slate-100 p-1 px-3 text-left hover:bg-slate-200">Génération</button>
                     <div class="dropdown-content absolute hidden flex-col shadow-md bg-white">
                         <a href="download" target="_blank">
-                            <button 
-                                 class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50 w-full" 
-                            >
-                                <span class="hide-on-request">Conférence (pptx)</span>
-                                <span class="show-on-request">Génération en cours...</span>
+                            <button class="bg-slate-200 p-2 text-left hover:bg-slate-300 w-full">
+                                Conférence (pptx)
                             </button>
                         </a>
                         <a href="generate-pdf" target="_blank">
-                            <button 
-                                 class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50 w-full" 
-                            >
-                                <span class="hide-on-request">Conférence (pdf)</span>
-                                <span class="show-on-request">Génération en cours...</span>
+                            <button class="bg-slate-200 p-2 text-left hover:bg-slate-300 w-full">
+                                Conférence (pdf)
                             </button>
                         </a>
-                        <button 
-                            class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
-                            hx-post="generate-grid" hx-swap="none"
-                        >
-                            Grille d'évaluation
-                        </button>
+                        <a href="generate-grid" target="_blank">
+                            <button  class="bg-slate-200 p-2 text-left hover:bg-slate-300 w-full">
+                                Grille d'évaluation
+                            </button>
+                        </a>
                         <!--
                         <button 
                             class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
