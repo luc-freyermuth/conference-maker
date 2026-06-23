@@ -18,6 +18,7 @@ import json
 from flask import send_file
 from io import BytesIO
 from text_utils import get_valid_filename
+import tempfile
 
 
 
@@ -28,8 +29,6 @@ server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
 conference_modules: list[ConferenceModule] = read_modules(get_conference_and_modules_path())
 conference = Conference(title='Ma conférence', subtitle='Accroche', parts=[])
 
-if not os.path.exists("out"):
-    os.makedirs("out")
 
 @server.route('/')
 def landing():
@@ -129,16 +128,20 @@ def set_module_part_hide_cover_slide(part_index: int):
 def download():
     c = get_current_conference()
 
-    file = f'out/{get_valid_filename(c.title)}.pptx'
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        print('created temporary directory', tmpdirname)
 
-    create_conference_slides(
-        conference_modules, 
-        conference=c, 
-        date=datetime.now().strftime("%d/%m/%Y"), 
-        pptx_save_path=file
-    )
+        file = f'{tmpdirname}/{get_valid_filename(c.title)}.pptx'
 
-    return send_file(os.path.abspath(file), as_attachment=True)
+        create_conference_slides(
+            conference_modules, 
+            conference=c, 
+            date=datetime.now().strftime("%d/%m/%Y"), 
+            pptx_save_path=file
+        )
+
+        with open(file, 'rb') as conference_file:
+            return send_file(BytesIO(conference_file.read()),  download_name=f'{get_valid_filename(c.title)}.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation', as_attachment=True)
 
 @server.route('/generate-pdf', methods=['POST'])
 def generate_pdf():
