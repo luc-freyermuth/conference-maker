@@ -43,6 +43,17 @@ class ConferenceModule:
     slides_count: int
 
 
+class ConferenceModulesService:
+    modules: list[ConferenceModule]
+
+    def __init__(self, conferences_and_modules_path: str):
+        self.modules = read_modules(conferences_and_modules_path)
+
+    def get_modules(self) -> list[ConferenceModule]: 
+        return self.modules
+
+    
+
 def read_modules(folder) -> list[ConferenceModule]:
     modules_folder = os.path.join(folder, 'modules')
     modules_subfolders = os.listdir(modules_folder)

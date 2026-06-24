@@ -4,7 +4,7 @@ from typing import Tuple, cast
 
 from flask import Flask, render_template, request, send_from_directory, send_file, session
 
-from modules import ConferenceModule, read_modules, get_all_tags
+from modules import ConferenceModule, ConferenceModulesService, get_all_tags
 from win32_powerpoint_builder import create_conference_slides
 from assessment_grid_builder import create_assessment_grid
 from config import get_conference_and_modules_path, get_gui_path, get_assets_path
@@ -19,21 +19,18 @@ from text_utils import get_valid_filename
 import tempfile
 from dataclasses import asdict
 
-
-
-
 server = Flask(__name__, static_url_path='/static', static_folder=get_conference_and_modules_path(), template_folder=get_gui_path())
 server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
 server.config['SECRET_KEY'] = 'TODO CHANGE THIS WHEN RELEASING IN PROD'
 
-conference_modules: list[ConferenceModule] = read_modules(get_conference_and_modules_path())
+conference_modules_service = ConferenceModulesService(get_conference_and_modules_path())
 
 @server.route('/')
 def landing():
     return render_template('index.html', 
-                           modules_list=render_modules_list(conference_modules), 
+                           modules_list=render_modules_list(conference_modules_service.get_modules()), 
                            conference=render_conference(get_current_conference()), 
-                           tags_categories=get_all_tags(conference_modules))
+                           tags_categories=get_all_tags(conference_modules_service.get_modules()))
 
 
 @server.route('/add-module/<int:module_id>', methods=['POST'])
@@ -131,7 +128,7 @@ def download():
         file = f'{tmpdirname}/{filename}'
 
         create_conference_slides(
-            conference_modules, 
+            conference_modules_service.get_modules(), 
             conference=c, 
             date=datetime.now().strftime("%d/%m/%Y"), 
             pptx_save_path=file
@@ -149,7 +146,7 @@ def generate_pdf():
         file = f'{tmpdirname}/{filename}'
 
         create_conference_slides(
-            conference_modules, 
+            conference_modules_service.get_modules(), 
             conference=c, 
             date=datetime.now().strftime("%d/%m/%Y"), 
             pdf_save_path=file
@@ -167,7 +164,7 @@ def generate_grid():
         file = f'{tmpdirname}/{filename}'
 
         create_assessment_grid(
-            conference_modules, 
+            conference_modules_service.get_modules(), 
             conference=c, 
             save_path=file
         )
@@ -248,7 +245,7 @@ def import_conference():
 def search_modules():
     search = request.args.get("search")
     tags = [(category_key.split('__')[1], request.args.get(category_key)) for category_key in filter(lambda k: k.startswith('category__') and request.args.get(k) != '', request.args.keys())]
-    return render_modules_list(conference_modules, search, tags)
+    return render_modules_list(conference_modules_service.get_modules(), search, tags)
 
 
 def get_current_conference() -> Conference:
@@ -273,7 +270,6 @@ def render_modules_list(modules: list[ConferenceModule], search: str | None = No
     return render_template('modules_list.html', modules=modules)
 
 def render_conference(c: Conference):
-    # modules: list[ConferenceModule] = [next(m for m in conference_modules if m.id == id) for id in c.modules]
     parts = [
         render_module_conference_part(part, get_module_by_id(part.module_id), idx, len(c.parts)) if isinstance(part, ModuleConferencePart) else render_cover_slide_conference_part(part, idx, len(c.parts))
         for idx, part in enumerate(c.parts)
@@ -364,7 +360,7 @@ def render_cover_slide_conference_part(cp: CoverSlideConferencePart, index: int,
                            is_last = index == (total - 1))
 
 def get_module_by_id(module_id: int) -> ConferenceModule:
-    module = next(m for m in conference_modules if m.id == module_id)
+    module = next(m for m in conference_modules_service.get_modules() if m.id == module_id)
     if module is None:
         raise ValueError(f'module with id {module_id} not found')
     return module
