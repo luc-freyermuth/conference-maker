@@ -24,6 +24,19 @@ class Conference:
     subtitle: str
     parts: list[ModuleConferencePart | CoverSlideConferencePart]
 
+    @classmethod
+    def from_dict(cls, data: dict):
+        return cls(title=data.get('title'), subtitle=data.get('subtitle'), parts=[
+            (ModuleConferencePart(module_id=session_part.get('module_id'), hide_cover_slide=session_part.get('hide_cover_slide')) 
+                if session_part.get('module_id') 
+                else CoverSlideConferencePart(title=session_part.get('title'), image=session_part.get('image')))
+            for session_part in data.get('parts')])
+
+    @classmethod
+    def get_default(cls):
+        return  cls(title='Ma conférence', subtitle='Accroche', parts=[])
+
+
 def serialize_conference(conference: Conference) -> str:
     def serialize_part(p: ModuleConferencePart | CoverSlideConferencePart) -> dict :
         if isinstance(p, ModuleConferencePart):

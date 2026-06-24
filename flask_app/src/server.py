@@ -17,6 +17,7 @@ from flask import send_file
 from io import BytesIO
 from text_utils import get_valid_filename
 import tempfile
+from dataclasses import asdict
 
 
 
@@ -26,8 +27,6 @@ server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
 server.config['SECRET_KEY'] = 'TODO CHANGE THIS WHEN RELEASING IN PROD'
 
 conference_modules: list[ConferenceModule] = read_modules(get_conference_and_modules_path())
-conference = Conference(title='Ma conférence', subtitle='Accroche', parts=[])
-
 
 @server.route('/')
 def landing():
@@ -67,7 +66,7 @@ def remove_module(module_index: int):
 
 @server.route('/reset', methods=['POST'])
 def reset():
-    new_conference = Conference(title='Ma conférence', subtitle='Accroche', parts=[])
+    new_conference = Conference.get_default()
     set_current_conference(new_conference)
     return render_conference(new_conference)
 
@@ -109,15 +108,8 @@ def cover_slide_part_pick_image(part_index: int):
     part_to_edit.image = CoverSlideConferencePartImage(base64=base64_string)
     c.parts[part_index] = part_to_edit
     set_current_conference(c)
-           
-        
-    return render_cover_slide_conference_part(part_to_edit, index=part_index, total=len(c.parts))
 
-    file = request.files.get("file")
-    if file is None:
-        return 'No file was sent', 400
-    set_current_conference(deserialize_conference(file.read().decode('utf-8')))
-    return render_conference(get_current_conference())
+    return render_cover_slide_conference_part(part_to_edit, index=part_index, total=len(c.parts))
 
 @server.route('/module-part/<int:part_index>/hide-cover-slide', methods=['PUT'])
 def set_module_part_hide_cover_slide(part_index: int):
@@ -262,16 +254,12 @@ def search_modules():
 def get_current_conference() -> Conference:
     session_conference = session.get('conference')
     if session_conference is not None:
-        return Conference(title=session_conference.get('title'), subtitle=session_conference.get('subtitle'), parts=[
-            (ModuleConferencePart(module_id=session_part.get('module_id'), hide_cover_slide=session_part.get('hide_cover_slide')) 
-                if session_part.get('module_id') 
-                else CoverSlideConferencePart(title=session_part.get('title'), image=session_part.get('image'))) 
-            for session_part in session_conference.get('parts')])
+        return Conference.from_dict(session_conference)
     else:
-        return Conference(title='Ma conférence', subtitle='Accroche', parts=[])
+        return Conference.get_default()
 
 def set_current_conference(c: Conference):
-    session['conference'] = c
+    session['conference'] = asdict(c)
 
 def render_modules_list(modules: list[ConferenceModule], search: str | None = None, tags: list[Tuple[str, str]] | None = None):
     if search:
