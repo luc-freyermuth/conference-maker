@@ -3,7 +3,12 @@ import os
 import pandas as pd
 from itertools import groupby
 from pptx import Presentation
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 from datetime import date
+import threading
+from utils import debounce
+import logging
 
 @dataclass
 class ModuleTag:
@@ -42,15 +47,41 @@ class ConferenceModule:
     sources: list[ModuleSource]
     slides_count: int
 
-
 class ConferenceModulesService:
     modules: list[ConferenceModule]
+    conferences_and_modules_path: str
 
     def __init__(self, conferences_and_modules_path: str):
         self.modules = read_modules(conferences_and_modules_path)
+        self.conferences_and_modules_path = conferences_and_modules_path
+        threading.Thread(target=lambda: self._udpate_modules_regularly()).start()
+        
 
     def get_modules(self) -> list[ConferenceModule]: 
         return self.modules
+    
+    def _udpate_modules_regularly(self):
+
+        @debounce(1)
+        def debouced_modules_update():
+            logging.info('File change detected, updating modules...')
+            self.modules = read_modules(self.conferences_and_modules_path)
+            logging.info('Modules updated !')
+
+        class UpdateModulesHandler(FileSystemEventHandler):
+            def on_any_event(self, _):
+                debouced_modules_update()
+
+        observer = Observer()
+        observer.schedule(UpdateModulesHandler(), self.conferences_and_modules_path, recursive=True)
+        observer.start()
+        try:
+            while observer.is_alive():
+                observer.join(1)
+        finally:
+            observer.stop()
+            observer.join()
+
 
     
 

@@ -12,6 +12,7 @@ dependencies = [
     "python-pptx>=1.0.2",
     "pywin32>=310",
     "waitress>=3.0.2",
+    "watchdog>=6.0.0",
 ]
 
 [dependency-groups]

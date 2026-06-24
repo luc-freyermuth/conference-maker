@@ -15,7 +15,7 @@ from image_cache import image_cache
 import json
 from flask import send_file
 from io import BytesIO
-from text_utils import get_valid_filename
+from utils import get_valid_filename
 import tempfile
 from dataclasses import asdict
 
