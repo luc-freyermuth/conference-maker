@@ -19,18 +19,18 @@ uv run --env-file .env .\flask_app\src\main.py
 
 ```sh
 # for release
-uv run python -m PyInstaller conference_builder.spec
+uv run python -m PyInstaller conference_builder_web.spec
 
 # debug version
-uv run python -m PyInstaller conference_builder_debug.spec
+uv run python -m PyInstaller conference_builder_web_debug.spec
 ```
 
 #### Command used to generate spec file :
 
 ```sh
 # for release
-uv run python -m PyInstaller .\flask_app\src\main.py -w -F --add-data "flask_app\gui;gui" --add-data "flask_app\assets;assets" --name conference_builder
+uv run python -m PyInstaller .\flask_app\src\main.py -w -F --add-data "flask_app\gui;gui" --add-data "flask_app\assets;assets" --name conference_builder_web
 
 # with debug console for testing, spec file will be ignored by git
-uv run python -m PyInstaller .\flask_app\src\main.py -w -F --add-data "flask_app\gui;gui" --add-data "flask_app\assets;assets" --name conference_builder_debug --console
+uv run python -m PyInstaller .\flask_app\src\main.py -w -F --add-data "flask_app\gui;gui" --add-data "flask_app\assets;assets" --name conference_builder_web_debug --console
 ```
