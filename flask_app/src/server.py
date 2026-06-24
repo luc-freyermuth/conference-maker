@@ -2,7 +2,7 @@ from itertools import groupby
 from datetime import datetime
 from typing import Tuple, cast
 
-from flask import Flask, render_template, request, send_from_directory, send_file
+from flask import Flask, render_template, request, send_from_directory, send_file, session
 
 from modules import ConferenceModule, read_modules, get_all_tags
 from win32_powerpoint_builder import create_conference_slides
@@ -23,6 +23,7 @@ import tempfile
 
 server = Flask(__name__, static_url_path='/static', static_folder=get_conference_and_modules_path(), template_folder=get_gui_path())
 server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
+server.config['SECRET_KEY'] = 'TODO CHANGE THIS WHEN RELEASING IN PROD'
 
 conference_modules: list[ConferenceModule] = read_modules(get_conference_and_modules_path())
 conference = Conference(title='Ma conférence', subtitle='Accroche', parts=[])
@@ -259,11 +260,18 @@ def search_modules():
 
 
 def get_current_conference() -> Conference:
-    return conference
+    session_conference = session.get('conference')
+    if session_conference is not None:
+        return Conference(title=session_conference.get('title'), subtitle=session_conference.get('subtitle'), parts=[
+            (ModuleConferencePart(module_id=session_part.get('module_id'), hide_cover_slide=session_part.get('hide_cover_slide')) 
+                if session_part.get('module_id') 
+                else CoverSlideConferencePart(title=session_part.get('title'), image=session_part.get('image'))) 
+            for session_part in session_conference.get('parts')])
+    else:
+        return Conference(title='Ma conférence', subtitle='Accroche', parts=[])
 
 def set_current_conference(c: Conference):
-    global conference
-    conference = c
+    session['conference'] = c
 
 def render_modules_list(modules: list[ConferenceModule], search: str | None = None, tags: list[Tuple[str, str]] | None = None):
     if search:
