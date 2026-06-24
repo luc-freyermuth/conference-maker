@@ -62,7 +62,7 @@ class ConferenceModulesService:
     
     def _udpate_modules_regularly(self):
 
-        @debounce(1)
+        @debounce(5)
         def debouced_modules_update():
             logging.info('File change detected, updating modules...')
             self.modules = read_modules(self.conferences_and_modules_path)
