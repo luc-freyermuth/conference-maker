@@ -29,7 +29,11 @@ class Conference:
         return cls(title=data.get('title'), subtitle=data.get('subtitle'), parts=[
             (ModuleConferencePart(module_id=session_part.get('module_id'), hide_cover_slide=session_part.get('hide_cover_slide')) 
                 if session_part.get('module_id') 
-                else CoverSlideConferencePart(title=session_part.get('title'), image=session_part.get('image')))
+                else CoverSlideConferencePart(title=session_part.get('title'), image=(
+                    CoverSlideConferencePartImage(base64=session_part.get('image').get('base64')) 
+                    if session_part.get('image') is not None 
+                    else None
+                )))
             for session_part in data.get('parts')])
 
     @classmethod

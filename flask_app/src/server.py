@@ -18,6 +18,12 @@ from io import BytesIO
 from utils import get_valid_filename
 import tempfile
 from dataclasses import asdict
+from database import db, UserSession
+import json
+from sqlalchemy import select
+from sqlalchemy.dialects.sqlite import insert
+from uuid import uuid4
+
 
 server = Flask(__name__, static_url_path='/static', static_folder=get_conference_and_modules_path(), template_folder=get_gui_path())
 server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
@@ -249,14 +255,23 @@ def search_modules():
 
 
 def get_current_conference() -> Conference:
-    session_conference = session.get('conference')
-    if session_conference is not None:
-        return Conference.from_dict(session_conference)
-    else:
-        return Conference.get_default()
+    with db.Session() as session:
+        line = session.scalar(select(UserSession).where(UserSession.id == get_session_id()))
+        if line is not None:
+            return Conference.from_dict(json.loads(line.data))
+        else:
+            return Conference.get_default()
 
 def set_current_conference(c: Conference):
-    session['conference'] = asdict(c)
+    with db.Session() as session:
+        stmt = insert(UserSession).values(id=get_session_id(), data=json.dumps(asdict(c)))
+        stmt = stmt.on_conflict_do_update(index_elements=["id"], set_=dict(data=json.dumps(asdict(c))))
+        session.execute(stmt)
+
+def get_session_id():
+    if (session.get('id') is None):
+        session['id'] = str(uuid4())
+    return session['id']
 
 def render_modules_list(modules: list[ConferenceModule], search: str | None = None, tags: list[Tuple[str, str]] | None = None):
     if search:

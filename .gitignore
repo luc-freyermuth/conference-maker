@@ -167,3 +167,5 @@ cython_debug/
 /modules_files/
 /uploads/
 /out/
+
+*.db
