@@ -1,14 +1,7 @@
-from sqlalchemy import create_engine, Text
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column
-
-class Base(DeclarativeBase):
-    pass
-
-class UserSession(Base):
-    __tablename__ = "session"
-    id: Mapped[str] = mapped_column(Text, primary_key=True)
-    data: Mapped[str] = mapped_column(Text)
-
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from tables.base import Base
+from tables.user_session import UserSession
 
 
 class Database:

@@ -18,11 +18,12 @@ from io import BytesIO
 from utils import get_valid_filename
 import tempfile
 from dataclasses import asdict
-from database import db, UserSession
+from database import db
 import json
 from sqlalchemy import select
 from sqlalchemy.dialects.sqlite import insert
 from uuid import uuid4
+from tables.user_session import UserSession
 
 
 server = Flask(__name__, static_url_path='/static', static_folder=get_conference_and_modules_path(), template_folder=get_gui_path())
