@@ -1,3 +1,5 @@
+from pathlib import Path
+from os import path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tables.base import Base
@@ -7,7 +9,7 @@ from tables.user_session import UserSession
 class Database:
     def __init__(self):
         self.engine = create_engine(
-            "sqlite:///cache.db", connect_args={"autocommit": True}
+            "sqlite:///" + path.abspath(path.join(Path.home(), 'conference_maker_cache.db')), connect_args={"autocommit": True}
         )
         self.Session = sessionmaker(self.engine)
 
