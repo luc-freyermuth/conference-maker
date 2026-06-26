@@ -73,7 +73,7 @@ class ConferenceModulesService:
                 debouced_modules_update()
 
         observer = Observer()
-        observer.schedule(UpdateModulesHandler(), self.conferences_and_modules_path, recursive=True)
+        observer.schedule(UpdateModulesHandler(), os.path.join(self.conferences_and_modules_path, 'modules'), recursive=True)
         observer.start()
         try:
             while observer.is_alive():
