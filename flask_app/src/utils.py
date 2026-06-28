@@ -54,5 +54,5 @@ def debounce(wait):
 
 def check_not_blank(value: Any, name: str) -> str:
     if value is None or value == '' or (type(value) is float and math.isnan(value)):
-        raise ValueError(f'Le champ {name} is vide')
+        raise ValueError(f'Le champ {name} est vide')
     return str(value)
