@@ -57,8 +57,13 @@
                         </button>
                     </div>
                 </div>
-                <div class="dropdown relative inline-block">
-                    <button class="drop-button bg-slate-100 p-1 px-3 text-left hover:bg-slate-200">Génération</button>
+                <div class="dropdown {% if not all_valid_modules %}disabled{% endif %} relative inline-block">
+                    <button 
+                        class="drop-button {% if all_valid_modules %}bg-slate-100 hover:bg-slate-200{% else %}bg-slate-100 text-red-400{% endif %} p-1 px-3 text-left"
+                        {% if not all_valid_modules %}title="Impossible de générer la conférence car certains modules sont invalides"{% endif %}
+                    >
+                        Génération
+                    </button>
                     <div class="dropdown-content absolute hidden flex-col shadow-md bg-white">
                         <a href="download" target="_blank">
                             <button class="bg-slate-200 p-2 text-left hover:bg-slate-300 w-full">

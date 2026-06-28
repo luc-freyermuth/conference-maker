@@ -1,39 +1,47 @@
 <div class="w-full flex flex-row gap-2 p-3 bg-slate-100 rounded" id="conference-part-{{index}}">
-    <img style="max-width: 150px;" class="object-contain" src="{{ image_url }}">
-    <div class="flex flex-col justify-between flex-1">
-        <div>
-            <p class="font-semibold">{{ title }}</p>
-            <p class="text-slate-500">{{ description }}</p>
-        </div>
-        <div class="flex flex-row justify-between items-end">
+    {% if is_valid %}
+        <img style="max-width: 150px;" class="object-contain" src="{{ image_url }}">
+        <div class="flex flex-col justify-between flex-1">
             <div>
+                <p class="font-semibold">{{ title }} <span class="text-slate-400 font-normal text-xs">ID : {{ module_id }}</span></p>
+                <p class="text-slate-500">{{ description }}</p>
+            </div>
+            <div class="flex flex-row justify-between items-end">
                 <div>
-                    {% if show_hide_cover %}
-                        <input name="hide-cover-slide" {{ "checked" if hide_cover else "" }} type="checkbox" id="hide-cover-{{index}}" hx-put="module-part/{{index}}/hide-cover-slide" hx-target="#conference-part-{{index}}" hx-swap="outerHTML"/> 
-                        <label for="hide-cover-{{index}}">Masquer la slide de couverture</label>
-                    {% endif %}
+                    <div>
+                        {% if show_hide_cover %}
+                            <input name="hide-cover-slide" {{ "checked" if hide_cover else "" }} type="checkbox" id="hide-cover-{{index}}" hx-put="module-part/{{index}}/hide-cover-slide" hx-target="#conference-part-{{index}}" hx-swap="outerHTML"/> 
+                            <label for="hide-cover-{{index}}">Masquer la slide de couverture</label>
+                        {% endif %}
+                    </div>
+                    <p>{{ duration_minutes }} minutes</p>
                 </div>
-                <p>{{ duration_minutes }} minutes</p>
-            </div>
-            <div class="text-right">
-                {% for tags_category in tags_categories %}
-                <p class="text-xs"><span class="font-semibold">{{ tags_category.category }}</span> : {% for tag in
-                    tags_category.tags %}
-                    {{ tag }}{% if not loop.last %} | {% endif %}
-                    {% endfor %}</p>
-                {% endfor %}
+                <div class="text-right">
+                    {% for tags_category in tags_categories %}
+                    <p class="text-xs"><span class="font-semibold">{{ tags_category.category }}</span> : {% for tag in
+                        tags_category.tags %}
+                        {{ tag }}{% if not loop.last %} | {% endif %}
+                        {% endfor %}</p>
+                    {% endfor %}
+                </div>
             </div>
         </div>
-    </div>
-    <div class="flex flex-col items-end justify-between">
-        <div hx-target="#conference" hx-swap="morph:innerHTML">
-            {% if not is_first %}
-            <button hx-post="move/{{index}}/{{index - 1}}">↑</button>
-            {% endif %}
-            {% if not is_last %}
-            <button hx-post="move/{{index}}/{{index + 1}}">↓</button>
-            {% endif %}
-            <button hx-delete="part/{{index}}">❌</button>
+        <div class="flex flex-col items-end justify-between">
+            <div hx-target="#conference" hx-swap="morph:innerHTML">
+                {% if not is_first %}
+                <button hx-post="move/{{index}}/{{index - 1}}">↑</button>
+                {% endif %}
+                {% if not is_last %}
+                <button hx-post="move/{{index}}/{{index + 1}}">↓</button>
+                {% endif %}
+                <button hx-delete="part/{{index}}">❌</button>
+            </div>
         </div>
-    </div>
+    {% else %}
+            <span class="text-red-600 flex-1">
+                Le module d'identifiant {{ module_id }} est invalide et n'a pas pu être analysé. La conférence ne pourra pas être générée. <br/>
+                {{ invalid_reason }}
+            </span>
+            <button hx-target="#conference" hx-swap="morph:innerHTML" hx-delete="part/{{index}}">❌</button>
+    {% endif %}
 </div>

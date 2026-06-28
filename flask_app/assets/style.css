@@ -23,11 +23,11 @@
   min-width: 200px;
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown:not(.disabled):hover .dropdown-content {
     display: flex;
 }
 
-.dropdown:hover .drop-button {
+.dropdown:not(.disabled):hover .drop-button {
     background-color: rgb(203 213 225 / var(--tw-bg-opacity, 1));
 }
 

@@ -34,10 +34,12 @@ conference_modules_service = ConferenceModulesService(get_conference_and_modules
 
 @server.route('/')
 def landing():
+    all_valid_modules = conference_modules_service.are_all_modules_valid([part.module_id for part in filter(lambda part: isinstance(part, ModuleConferencePart), get_current_conference().parts)])
     return render_template('index.html', 
                            modules_list=render_modules_list(conference_modules_service.get_modules()), 
                            conference=render_conference(get_current_conference()), 
-                           tags_categories=get_all_tags(conference_modules_service.get_modules()))
+                           tags_categories=get_all_tags(conference_modules_service.get_modules()),
+                           all_valid_modules=all_valid_modules)
 
 
 @server.route('/add-module/<int:module_id>', methods=['POST'])
@@ -124,7 +126,7 @@ def set_module_part_hide_cover_slide(part_index: int):
     part_to_edit.hide_cover_slide = request.form.get("hide-cover-slide") == 'on'
     c.parts[part_index] = part_to_edit
     set_current_conference(c)
-    return render_module_conference_part(part_to_edit, get_module_by_id(part_to_edit.module_id), index=part_index, total=len(c.parts))
+    return render_module_conference_part(part_to_edit, conference_modules_service.get_module_by_id(part_to_edit.module_id), index=part_index, total=len(c.parts))
 
 @server.route('/download', methods=['GET'])
 def download():
@@ -252,7 +254,7 @@ def import_conference():
 def search_modules():
     search = request.args.get("search")
     tags = [(category_key.split('__')[1], request.args.get(category_key)) for category_key in filter(lambda k: k.startswith('category__') and request.args.get(k) != '', request.args.keys())]
-    return render_modules_list(conference_modules_service.get_modules(), search, tags)
+    return render_modules_list(conference_modules_service.get_visible_modules(), search, tags)
 
 
 def get_current_conference() -> Conference:
@@ -287,14 +289,14 @@ def render_modules_list(modules: list[ConferenceModule], search: str | None = No
 
 def render_conference(c: Conference):
     parts = [
-        render_module_conference_part(part, get_module_by_id(part.module_id), idx, len(c.parts)) if isinstance(part, ModuleConferencePart) else render_cover_slide_conference_part(part, idx, len(c.parts))
+        render_module_conference_part(part, conference_modules_service.get_module_by_id(part.module_id), idx, len(c.parts)) if isinstance(part, ModuleConferencePart) else render_cover_slide_conference_part(part, idx, len(c.parts))
         for idx, part in enumerate(c.parts)
     ]
-    total_duration = sum([get_module_by_id(cast(ModuleConferencePart, part).module_id).duration_minutes for part in filter(lambda p: isinstance(p, ModuleConferencePart), c.parts)])
+    total_duration = sum([conference_modules_service.get_module_by_id(cast(ModuleConferencePart, part).module_id).duration_minutes for part in filter(lambda p: isinstance(p, ModuleConferencePart), c.parts)])
 
 
     modules_parts = [part for part in c.parts if isinstance(part, ModuleConferencePart)]
-    modules = [get_module_by_id(part.module_id) for part in modules_parts]
+    modules = [conference_modules_service.get_module_by_id(part.module_id) for part in modules_parts]
     tags_with_duration: list[dict] = []
     for module in modules:
         for tag in module.tags:
@@ -356,6 +358,7 @@ def render_conference(c: Conference):
 
 def render_module_conference_part(cp: ModuleConferencePart, module: ConferenceModule, index: int, total: int) -> str:
     return render_template('module_conference_part.html', 
+                            module_id = module.id,
                             image_url = module.img_url,
                             title = module.title,
                             description = module.description,
@@ -365,7 +368,9 @@ def render_module_conference_part(cp: ModuleConferencePart, module: ConferenceMo
                             is_first = index == 0,
                             is_last = index == (total - 1),
                             show_hide_cover = module.has_cover_slide,
-                            hide_cover = cp.hide_cover_slide)
+                            hide_cover = cp.hide_cover_slide,
+                            is_valid = module.is_valid,
+                            invalid_reason = module.invalid_reason)
 
 def render_cover_slide_conference_part(cp: CoverSlideConferencePart, index: int, total: int) -> str:
     return render_template('cover_slide_conference_part.html',
@@ -374,12 +379,6 @@ def render_cover_slide_conference_part(cp: CoverSlideConferencePart, index: int,
                            image_url = f'data:image/png;base64,{cp.image.base64}' if cp.image else None,
                            is_first = index == 0,
                            is_last = index == (total - 1))
-
-def get_module_by_id(module_id: int) -> ConferenceModule:
-    module = next(m for m in conference_modules_service.get_modules() if m.id == module_id)
-    if module is None:
-        raise ValueError(f'module with id {module_id} not found')
-    return module
 
 toast_id = 0
 

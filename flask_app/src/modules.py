@@ -9,6 +9,7 @@ from datetime import date
 import threading
 from utils import debounce
 import logging
+from utils import check_not_blank
 
 @dataclass
 class ModuleTag:
@@ -46,6 +47,9 @@ class ConferenceModule:
     messages: list[ModuleMessage]
     sources: list[ModuleSource]
     slides_count: int
+    is_valid: bool
+    invalid_reason: str | None
+    is_hidden: bool
 
 class ConferenceModulesService:
     modules: list[ConferenceModule]
@@ -60,6 +64,28 @@ class ConferenceModulesService:
     def get_modules(self) -> list[ConferenceModule]: 
         return self.modules
     
+    def get_valid_modules(self) -> list[ConferenceModule]: 
+        return list(filter(lambda mod: mod.is_valid, self.modules))
+    
+    def get_visible_modules(self) -> list[ConferenceModule]: 
+        return list(filter(lambda mod: not mod.is_hidden, self.modules))
+    
+    def get_module_by_id(self, module_id: int) -> ConferenceModule:
+        module = next(m for m in self.get_modules() if m.id == module_id)
+        if module is None:
+            raise ValueError(f'module with id {module_id} not found')
+        return module
+    
+    def are_all_modules_valid(self, module_ids: list[int]) -> bool:
+        for module_id in module_ids:
+            try:
+                module = self.get_module_by_id(module_id)
+                if not module.is_valid:
+                    return False
+            except ValueError:
+                return False
+        return True
+    
     def _udpate_modules_regularly(self):
 
         @debounce(5)
@@ -72,9 +98,14 @@ class ConferenceModulesService:
             def on_any_event(self, _):
                 debouced_modules_update()
 
+        path_to_watch = os.path.join(self.conferences_and_modules_path, 'modules')
+
         observer = Observer()
-        observer.schedule(UpdateModulesHandler(), os.path.join(self.conferences_and_modules_path, 'modules'), recursive=True)
+        observer.schedule(UpdateModulesHandler(), path_to_watch, recursive=True)
         observer.start()
+
+        print(f'Watching folder `{path_to_watch}` for modules updates...')
+
         try:
             while observer.is_alive():
                 observer.join(1)
@@ -90,36 +121,44 @@ def read_modules(folder) -> list[ConferenceModule]:
     modules_subfolders = os.listdir(modules_folder)
     modules: list[ConferenceModule] = []
     for module_subfolder in modules_subfolders:
-        module_path = os.path.join(modules_folder, module_subfolder)
-        
-        module_files = [f for f in os.listdir(module_path) if os.path.isfile(os.path.join(module_path, f))]
+        try:
+            module_path = os.path.join(modules_folder, module_subfolder)
+            
+            module_files = [f for f in os.listdir(module_path) if os.path.isfile(os.path.join(module_path, f))]
 
-        module_definition_file = next(x for x in module_files if x.endswith('module.xlsx'))
-        module_definition_file_path = os.path.join(module_path, module_definition_file)
+            module_definition_file = next((x for x in module_files if x.endswith('module.xlsx')), None)
+            if (module_definition_file is None):
+                raise ValueError(f'Unable to find a file ending with `.module.xlsx` in module `{module_subfolder}`')
+            module_definition_file_path = os.path.join(module_path, module_definition_file)
 
-        module_slides_file = next(x for x in module_files if x.endswith('slides.pptx'))
-        module_slides_file_path = os.path.join(module_path, module_slides_file)
+            module_slides_file = next((x for x in module_files if x.endswith('slides.pptx')), None)
+            if (module_slides_file is None):
+                raise ValueError(f'Unable to find a file ending with `.slides.pptx` in module `{module_subfolder}`')
+            module_slides_file_path = os.path.join(module_path, module_slides_file)
 
-        prs = Presentation(module_slides_file_path)
-        slides_count = len(prs.slides)
+            prs = Presentation(module_slides_file_path)
+            slides_count = len(prs.slides)
 
-        pd_xl_file = pd.ExcelFile(module_definition_file_path)
-        general_df = pd.read_excel(pd_xl_file, 'General', header=None)
-        tags_df = pd.read_excel(pd_xl_file, 'Etiquettes')
-        messages_df = pd.read_excel(pd_xl_file, 'Messages clés pour évaluation')
-        sources_df = pd.read_excel(pd_xl_file, 'Données & sources')
+            pd_xl_file = pd.ExcelFile(module_definition_file_path)
+            general_df = pd.read_excel(pd_xl_file, 'General', header=None)
+            tags_df = pd.read_excel(pd_xl_file, 'Etiquettes')
+            messages_df = pd.read_excel(pd_xl_file, 'Messages clés pour évaluation')
+            sources_df = pd.read_excel(pd_xl_file, 'Données & sources')
 
-        module_cover_file = next((x for x in module_files if x.endswith('cover.png') or x.endswith('cover.jpg')), None)
+            module_cover_file = next((x for x in module_files if x.endswith('cover.png') or x.endswith('cover.jpg')), None)
+            if (module_cover_file is None):
+                raise ValueError(f'Unable to find a cover file ending with `.cover.png` or `.cover.jpg` in module `{module_subfolder}`')
 
-        pd_xl_file.close()
+            pd_xl_file.close()
 
-        if general_df[1][4] != 'Caché':
+            check_not_blank(general_df[1][4], "Statut")
+
             modules.append(ConferenceModule(
                 id=int(module_subfolder[0:4]),
-                title=general_df[1][0],
-                description=general_df[1][1],
+                title=check_not_blank(general_df[1][0], "Titre"),
+                description=check_not_blank(general_df[1][1], "Description"),
                 duration_minutes=general_df[1][2],
-                img_url=f'/static/modules/{module_subfolder}/{module_cover_file}' if module_cover_file is not None else '',
+                img_url=f'/static/modules/{module_subfolder}/{module_cover_file}',
                 slides_path=f'{modules_folder}/{module_subfolder}/{module_slides_file}',
                 tags=[ModuleTag(category, tag) for category in tags_df.columns for tag in tags_df[category].tolist() if isinstance(tag, str)],
                 has_cover_slide=general_df[1][3],
@@ -131,8 +170,34 @@ def read_modules(folder) -> list[ConferenceModule]:
                     source=row.iloc[3], 
                     expiry_date=row.iloc[4].date() if not pd.isna(row.iloc[4]) else None
                 ) for _, row in sources_df.iterrows()],
-                slides_count=slides_count
+                slides_count=slides_count,
+                is_valid=True,
+                invalid_reason=None,
+                is_hidden=(general_df[1][4] == 'Caché')
             ))
+        except Exception as e:
+            try:
+                module_id =int(module_subfolder[0:4])
+                modules.append(ConferenceModule(
+                    id=module_id,
+                    title='',
+                    description='',
+                    duration_minutes=0,
+                    img_url='',
+                    slides_path='',
+                    tags=[],
+                    has_cover_slide=False,
+                    messages=[],
+                    sources=[],
+                    slides_count=0,
+                    is_valid=False,
+                    invalid_reason=str(e),
+                    is_hidden=True
+                ))
+                logging.warning(f'An error occured while parsing module {module_id}: {str(e)}')
+            except Exception as e2:
+                logging.error(f'Completely unable to parse module from folder: `{module_subfolder}`: {str(e)}, {str(e2)}')
+
 
     return modules
 

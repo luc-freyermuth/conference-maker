@@ -2,6 +2,8 @@ import re
 from threading import Timer
 from inspect import signature
 import time
+from typing import Any
+import math
 
 def get_valid_filename(name):
     s = str(name).strip().replace(" ", "_")
@@ -48,3 +50,9 @@ def debounce(wait):
         return debounced
 
     return decorator
+
+
+def check_not_blank(value: Any, name: str) -> str:
+    if value is None or value == '' or (type(value) is float and math.isnan(value)):
+        raise ValueError(f'Le champ {name} is vide')
+    return str(value)
