@@ -1,0 +1,9 @@
+- Homepage
+- Bibliothèque
+  - Liste des modules, recherche...
+  - Détail d'un module
+- Créer une conférence
+  - Charger une conf existante
+  - Composer sa conf
+- Monitoring
+  - Identifier les modules pas à jour

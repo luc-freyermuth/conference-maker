@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="assets/htmx.min.js"></script>
+    <script src="assets/tailwind.js"></script>
+    <script src="assets/charts.js"></script>
+    <script src="assets/charts.component.js"></script>
+    <script src="assets/idiomorph.min.js" integrity="sha384-JcorokHTL/m+D6ZHe2+yFVQopVwZ+91GxAPDyEZ6/A/OEPGEx1+MeNSe2OGvoRS9" crossorigin="anonymous"></script>
+    <script src="assets/idiomorph-ext.min.js" integrity="sha384-szktAZju9fwY15dZ6D2FKFN4eZoltuXiHStNDJWK9+FARrxJtquql828JzikODob" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="assets/style.css">
+    <title>Conference module library</title>
+</head>
+
+<body class="h-full flex flex-col" hx-ext="morph">
+    <nav class="h-[80px] border-b border-solid flex flex-row border-slate-200 items-center p-4 justify-between" hx-boost="true">
+        <div>
+            <a href="/">
+                <img alt="logo des shifters" class="h-[50px]" src="assets/logo.svg">
+            </a>
+        </div>
+        <div class="flex flex-row gap-2">
+            <a href="/library">Bibliothèque</a>
+            <a href="/maker">Créateur de conférences</a>
+        </div>
+    </nav>
+    <div id="page-content" class="flex-1 min-h-0">
+        {% block content %}{% endblock %}
+    </div>
+    <section id="toast-container" class="absolute bottom-0 right-0 p-3 flex flex-col gap-3 overflow-hidden"></section>
+    <script>
+        function removeToast(toast_id) {
+            document.querySelector('#toast-' + toast_id)?.remove();
+        }
+    </script>
+</body>
+
+</html>

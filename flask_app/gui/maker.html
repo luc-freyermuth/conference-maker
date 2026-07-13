@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="flex flex-col h-full">
+    <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-3">
+        <div class="flex flex-row bg-slate-100">
+            <div class="dropdown relative inline-block">
+                <button class="drop-button bg-slate-100 p-1 px-3 text-left hover:bg-slate-200">Fichier</button>
+                <div class="dropdown-content absolute hidden flex-col shadow-md bg-white">
+                    <button 
+                        class="bg-slate-200 p-2 text-left hover:bg-slate-300" 
+                        hx-post="reset"  hx-target="#conference" hx-swap="innerHTML"
+                    >
+                        Recommencer
+                    </button>
+                    <button 
+                        class="bg-slate-200 p-2 text-left hover:bg-slate-300"
+                        onclick="document.querySelector('#file-open').click()"
+                    >
+                        Ouvrir
+                        <form  hx-trigger="change" hx-post="import" hx-target="#conference" hx-swap="innerHTML" hx-encoding="multipart/form-data" hidden>
+                            <input type='file' id="file-open" name="file" />
+                        </form>   
+                    </button>
+                    <a href="export" target="_blank">
+                        <button 
+                            class="bg-slate-200 p-2 text-left hover:bg-slate-300 w-full"
+                        >
+                            Enregistrer
+                        </button>
+                    </a>
+                    
+                </div>
+            </div>
+            <div class="dropdown relative inline-block">
+                <button class="drop-button bg-slate-100 p-1 px-3 text-left hover:bg-slate-200">Edition</button>
+                <div class="dropdown-content absolute hidden flex-col shadow-md bg-white">
+                    <button 
+                        class="bg-slate-200 p-2 text-left hover:bg-slate-300" 
+                        hx-post="add-cover-slide-part" hx-target="#conference" hx-swap="innerHTML"
+                    >
+                        Ajouter une transition
+                    </button>
+                </div>
+            </div>
+            <div class="dropdown {% if not all_valid_modules %}disabled{% endif %} relative inline-block">
+                <button 
+                    class="drop-button {% if all_valid_modules %}bg-slate-100 hover:bg-slate-200{% else %}bg-slate-100 text-red-400{% endif %} p-1 px-3 text-left"
+                    {% if not all_valid_modules %}title="Impossible de générer la conférence car certains modules sont invalides"{% endif %}
+                >
+                    Génération
+                </button>
+                <div class="dropdown-content absolute hidden flex-col shadow-md bg-white">
+                    <a href="download" target="_blank">
+                        <button class="bg-slate-200 p-2 text-left hover:bg-slate-300 w-full">
+                            Conférence (pptx)
+                        </button>
+                    </a>
+                    <a href="generate-pdf" target="_blank">
+                        <button class="bg-slate-200 p-2 text-left hover:bg-slate-300 w-full">
+                            Conférence (pdf)
+                        </button>
+                    </a>
+                    <a href="generate-grid" target="_blank">
+                        <button  class="bg-slate-200 p-2 text-left hover:bg-slate-300 w-full">
+                            Grille d'évaluation
+                        </button>
+                    </a>
+                    <!--
+                    <button 
+                        class="bg-slate-200 p-2 text-left hover:bg-slate-300 disabled:opacity-50" 
+                        hx-post="generate-kit" hx-swap="none" hx-disabled-elt="this"
+                    >
+                        <span class="hide-on-request">Kit complet</span>
+                        <span class="show-on-request">Génération en cours...</span>
+                    </button>
+                    -->
+                    
+                </div>
+            </div>
+        </div>
+
+        <div id="conference" class="flex-1 min-h-0">
+            {{ conference|safe }}
+        </div>
+    </div>
+
+
+    <div class="border-t-2 border-slate-200">
+        <h1>Modules !</h1>
+        <form hx-trigger="change, keyup from:[name='search'] delay:500ms" id="module-search-form" hx-get="search-modules" hx-target="#modules-list" hx-swap="innerHTML" class="flex gap-6 items-start">
+            <div class="inline-flex flex-col">
+                <label for="search">Recherche</label>
+                <input name="search" placeholder="search..." />
+            </div>
+            {% for tag_category in tags_categories %}
+                <div class="inline-flex flex-col">
+                    <label for="category__{{ tag_category.name }}">{{ tag_category.name }}</label>
+                    <select name="category__{{ tag_category.name }}">
+                        <option value="">--</option>
+                        {% for tag in tag_category.tags %}
+                            <option value="{{tag.tag}}">{{ tag.tag }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endfor %}
+        </form>
+        <div id="modules-list" class="flex flex-row gap-4 overflow-x-scroll">
+            {{ modules_list|safe }}
+        </div>
+    </div>
+</div>
+{% endblock %}
