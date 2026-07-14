@@ -1,5 +1,3 @@
-console.error('hello')
-
 class ChartElement extends HTMLElement {
   #canvas = null;
   #chart = null;
@@ -59,7 +57,6 @@ class ChartElement extends HTMLElement {
 }
 
 customElements.define("charts-js", ChartElement);
-console.log('defined');
 
 
 

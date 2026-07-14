@@ -4,10 +4,10 @@ from typing import Tuple, cast
 
 from flask import render_template, request, send_from_directory, send_file, session
 
-from modules import ConferenceModule, ConferenceModulesService, get_all_tags
+from modules import ConferenceModule, get_all_tags
 from win32_powerpoint_builder import create_conference_slides
 from assessment_grid_builder import create_assessment_grid
-from config import get_conference_and_modules_path, get_gui_path, get_assets_path
+from config import get_assets_path
 from conference import Conference, serialize_conference, deserialize_conference, ModuleConferencePart, CoverSlideConferencePart, CoverSlideConferencePartImage
 import base64
 import io
@@ -25,8 +25,7 @@ from sqlalchemy.dialects.sqlite import insert
 from uuid import uuid4
 from tables.user_session import UserSession
 from . import routes
-
-conference_modules_service = ConferenceModulesService(get_conference_and_modules_path())
+from modules import conference_modules_service
 
 @routes.route('/maker')
 def maker_landing():

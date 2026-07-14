@@ -10,6 +10,7 @@ import threading
 from utils import debounce
 import logging
 from utils import check_not_blank
+from config import get_conference_and_modules_path
 
 @dataclass
 class ModuleTag:
@@ -113,9 +114,6 @@ class ConferenceModulesService:
             observer.stop()
             observer.join()
 
-
-    
-
 def read_modules(folder) -> list[ConferenceModule]:
     modules_folder = os.path.join(folder, 'modules')
     modules_subfolders = os.listdir(modules_folder)
@@ -211,3 +209,6 @@ def get_all_tags(modules: list[ConferenceModule]) -> list[TagCategory]:
 def unique_by_key(list, getkey):
     seen = set()
     return [seen.add(getkey(obj)) or obj for obj in list if getkey(obj) not in seen]
+
+
+conference_modules_service = ConferenceModulesService(get_conference_and_modules_path())

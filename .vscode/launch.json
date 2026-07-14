@@ -8,8 +8,17 @@
             "name": "Python Debugger: Flask",
             "type": "debugpy",
             "request": "launch",
-            "autoStartBrowser": false,
-            "program": "${workspaceFolder}\\flask_app\\src\\main.py",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "flask_app/src/server.py",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "run",
+                "--no-reload"
+            ],
+            "jinja": true,
+            "justMyCode": true,
             "envFile": "${workspaceFolder}/.env"
         }
     ]
