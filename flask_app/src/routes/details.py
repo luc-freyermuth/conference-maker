@@ -12,6 +12,10 @@ def module_details(module_id: int):
                             title = module.title,
                             description = module.description,
                             duration_minutes = module.duration_minutes,
+                            maintainer = module.maintainer,
+                            sources = module.sources,
+                            changes = module.changes,
+                            messages = module.messages,
                             tags_categories = [ { "category": k, "tags": [tag.tag for tag in v] } for k, v in groupby(module.tags, lambda t:t.category) ],
                             is_valid = module.is_valid,
                             invalid_reason = module.invalid_reason)

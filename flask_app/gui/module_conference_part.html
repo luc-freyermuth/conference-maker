@@ -17,12 +17,9 @@
                     <p>{{ duration_minutes }} minutes</p>
                 </div>
                 <div class="text-right">
-                    {% for tags_category in tags_categories %}
-                    <p class="text-xs"><span class="font-semibold">{{ tags_category.category }}</span> : {% for tag in
-                        tags_category.tags %}
-                        {{ tag }}{% if not loop.last %} | {% endif %}
-                        {% endfor %}</p>
-                    {% endfor %}
+                    <a href="/module/{{ module_id }}">
+                        <button class="bg-slate-200 p-1 text-sm rounded hover:ring-2 ring-slate-500">Voir les détails</button>
+                    </a>
                 </div>
             </div>
         </div>

@@ -1,13 +1,186 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="mt-4 mx-4">
-    <h1>{{ title }}</h1>
-    <div class="flex flex-row">
-        <img src="{{ image_url }}" class="w-96" />
-        <div>
-            <span>{{ description }}</span>
+<div class="mt-8 pb-8 w-site mx-auto px-4">
+
+    <div class="border-b border-slate-200 pb-6 mb-8">
+        <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ title }}</h1>
+        <div class="mt-3 flex items-center gap-2 text-sm text-slate-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <span>{{ duration_minutes }} minutes</span>
         </div>
     </div>
+
+    <div class="flex flex-col lg:flex-row gap-10">
+
+        <div class="lg:w-80 shrink-0">
+            <div class="lg:sticky lg:top-6 space-y-5">
+                <img src="{{ image_url }}" class="w-full rounded-xl border border-slate-200 shadow-sm object-cover" />
+
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                    <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-400">Maintenu par</h2>
+                    <div>
+                        <div class="font-medium text-slate-800">{{ maintainer.name }}</div>
+                        <div class="mt-1 text-sm text-slate-500 space-y-0.5">
+                            <div class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                <span>{{ maintainer.contact_email }}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+                                <span>{{ maintainer.contact_discord }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if tags_categories %}
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                    {% for tags_category in tags_categories %}
+                    <div>
+                        <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ tags_category.category }}</h2>
+                        <div class="mt-1.5 flex flex-wrap gap-1.5">
+                            {% for tag in tags_category.tags %}
+                            <span class="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-600/20">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex-1 min-w-0">
+
+            <p class="text-slate-700 leading-relaxed mb-8">{{ description }}</p>
+
+            <!-- Tabs -->
+            <div class="flex gap-6 border-b border-slate-200 mb-6">
+                <button type="button" data-tab-btn="messages" onclick="switchTab('messages')"
+                    class="pb-3 -mb-px border-b-2 border-teal-600 text-teal-700 text-sm font-medium flex items-center gap-1.5">
+                    Déroulé
+                    <span class="text-xs text-slate-400">{{ messages|length }}</span>
+                </button>
+                <button type="button" data-tab-btn="sources" onclick="switchTab('sources')"
+                    class="pb-3 -mb-px border-b-2 border-transparent text-slate-500 text-sm font-medium flex items-center gap-1.5 hover:text-slate-700">
+                    Sources
+                    <span class="text-xs text-slate-400">{{ sources|length }}</span>
+                </button>
+                <button type="button" data-tab-btn="changelog" onclick="switchTab('changelog')"
+                    class="pb-3 -mb-px border-b-2 border-transparent text-slate-500 text-sm font-medium flex items-center gap-1.5 hover:text-slate-700">
+                    Changelog
+                    <span class="text-xs text-slate-400">{{ changes|length }}</span>
+                </button>
+            </div>
+
+            {% macro empty_state(message) %}
+            <div class="rounded-xl border border-dashed border-slate-200 py-10 text-center">
+                <p class="text-sm text-slate-400">{{ message }}</p>
+            </div>
+            {% endmacro %}
+
+            <!-- Panel: Messages -->
+            <div data-tab-panel="messages">
+                {% if messages %}
+                <ol class="relative border-l border-slate-200 ml-3 space-y-6">
+                    {% for message in messages %}
+                    <li class="ml-6">
+                        <span class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-teal-600 ring-4 ring-white"></span>
+                        <span class="inline-flex items-center rounded bg-teal-50 px-1.5 py-0.5 font-mono text-[11px] font-medium text-teal-700 mb-1">Slide {{ message.slide_index1 }}</span>
+                        <p class="text-slate-700 leading-relaxed">{{ message.content }}</p>
+                    </li>
+                    {% endfor %}
+                </ol>
+                {% else %}
+                    {{ empty_state("Aucun message renseigné pour ce module.") }}
+                {% endif %}
+            </div>
+
+            <!-- Panel: Sources -->
+            <div data-tab-panel="sources" class="hidden">
+                {% if sources %}
+                <div class="overflow-hidden rounded-xl border border-slate-200">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-4 py-2.5 text-left font-medium text-slate-500 w-20">Slide</th>
+                                <th class="px-4 py-2.5 text-left font-medium text-slate-500">Intitulé</th>
+                                <th class="px-4 py-2.5 text-left font-medium text-slate-500">Valeur</th>
+                                <th class="px-3 py-2.5 text-left font-medium text-slate-500 max-w-32">Référence</th>
+                                <th class="px-4 py-2.5 text-left font-medium text-slate-500">Expiration</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for source in sources %}
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-2.5">
+                                    <span class="inline-flex items-center justify-center rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">{{ source.slide_index1 }}</span>
+                                </td>
+                                <td class="px-4 py-2.5 text-slate-700">{{ source.title }}</td>
+                                <td class="px-4 py-2.5 text-slate-700">{{ source.value }}</td>
+                                <td class="px-3 py-2.5 align-top max-w-32">
+                                    {% if source.source %}
+                                    <p class="text-xs text-slate-500 truncate" title="{{ source.source }}">{{ source.source }}</p>
+                                    {% endif %}
+                                    {% if source.urls %}
+                                    <div class="mt-1 flex flex-wrap gap-1">
+                                        {% for url in source.urls %}
+                                        <a href="{{ url }}" target="_blank" rel="noopener noreferrer" title="{{ url }}"
+                                           class="inline-flex items-center gap-0.5 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-500 hover:bg-teal-50 hover:text-teal-700">
+                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>{{ loop.index }}
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-2.5 text-slate-500">{{ source.expiry_date }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    {{ empty_state("Aucune source renseignée pour ce module.") }}
+                {% endif %}
+            </div>
+
+            <!-- Panel: Changelog -->
+            <div data-tab-panel="changelog" class="hidden">
+                {% if changes %}
+                <ol class="relative border-l border-slate-200 ml-3 space-y-6">
+                    {% for change in changes %}
+                    <li class="ml-6">
+                        <span class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-400 ring-4 ring-white"></span>
+                        <div class="flex items-center gap-2 mb-1">
+                            <time class="text-xs text-slate-400">{{ change.date }}</time>
+                            <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">Slide {{ change.slide_index1 }}</span>
+                        </div>
+                        <p class="text-slate-700 leading-relaxed">{{ change.description }}</p>
+                    </li>
+                    {% endfor %}
+                </ol>
+                {% else %}
+                    {{ empty_state("Aucun changement enregistré pour ce module.") }}
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
 </div>
+
+<script>
+// Simple vanilla-JS tab switcher
+function switchTab(id) {
+    document.querySelectorAll('[data-tab-panel]').forEach(function (panel) {
+        panel.classList.toggle('hidden', panel.dataset.tabPanel !== id);
+    });
+    document.querySelectorAll('[data-tab-btn]').forEach(function (btn) {
+        var active = btn.dataset.tabBtn === id;
+        btn.classList.toggle('border-teal-600', active);
+        btn.classList.toggle('text-teal-700', active);
+        btn.classList.toggle('border-transparent', !active);
+        btn.classList.toggle('text-slate-500', !active);
+    });
+}
+</script>
 {% endblock %}

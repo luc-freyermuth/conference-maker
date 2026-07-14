@@ -15,17 +15,25 @@
 </head>
 
 <body class="h-full flex flex-col" hx-ext="morph">
-    <nav class="h-[80px] border-b border-solid flex flex-row border-slate-200 items-center p-4 justify-between" hx-boost="true">
-        <div>
-            <a href="/">
-                <img alt="logo des shifters" class="h-[50px]" src="/assets/logo.svg">
-            </a>
-        </div>
-        <div class="flex flex-row gap-2">
-            <a href="/library">Bibliothèque</a>
-            <a href="/maker">Créateur de conférences</a>
-        </div>
-    </nav>
+    <div class="border-b border-solid border-slate-200">
+        <nav class="h-[80px] flex flex-row items-center p-4 justify-between w-full w-site mx-auto" hx-boost="true">
+    <div>
+        <a href="/">
+            <img alt="logo des shifters" class="h-[50px]" src="/assets/logo.svg">
+        </a>
+    </div>
+    <div class="flex flex-row items-center gap-1">
+        <a href="/library"
+           class="rounded-sm px-3.5 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-teal-700">
+            Bibliothèque
+        </a>
+        <a href="/maker"
+           class="rounded-sm px-3.5 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-teal-700">
+            Créateur de conférences
+        </a>
+    </div>
+</nav>
+    </div>
     <div id="page-content" class="flex-1 min-h-0">
         {% block content %}{% endblock %}
     </div>

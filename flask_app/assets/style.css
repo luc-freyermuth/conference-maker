@@ -1,3 +1,9 @@
+body { 
+    --site-width: 1200px; 
+    font-family: Arial, Helvetica, sans-serif;
+    overflow-y: scroll;
+}
+
 .show-on-request {
     display: none;
 }
@@ -47,4 +53,8 @@
 
 chart-js {
   display: block;
+}
+
+.w-site {
+    max-width: var(--site-width);
 }

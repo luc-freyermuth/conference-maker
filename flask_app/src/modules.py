@@ -9,7 +9,7 @@ from datetime import date
 import threading
 from utils import debounce
 import logging
-from utils import check_not_blank
+from utils import check_not_blank, get_urls_in_str
 from config import get_conference_and_modules_path
 
 @dataclass
@@ -33,7 +33,20 @@ class ModuleSource:
     title: str
     value: str | None
     source: str
+    urls: list[str]
     expiry_date: date | None
+
+@dataclass
+class ModuleChange:
+    slide_index1: int
+    description: str
+    date: date | None
+
+@dataclass
+class ModuleMaintainerInfo:
+    name: str
+    contact_email: str | None
+    contact_discord: str | None
 
 @dataclass
 class ConferenceModule:
@@ -47,7 +60,9 @@ class ConferenceModule:
     has_cover_slide: bool
     messages: list[ModuleMessage]
     sources: list[ModuleSource]
+    changes: list[ModuleChange]
     slides_count: int
+    maintainer: ModuleMaintainerInfo
     is_valid: bool
     invalid_reason: str | None
     is_hidden: bool
@@ -142,6 +157,8 @@ def read_modules(folder) -> list[ConferenceModule]:
             tags_df = pd.read_excel(pd_xl_file, 'Etiquettes')
             messages_df = pd.read_excel(pd_xl_file, 'Messages clés pour évaluation')
             sources_df = pd.read_excel(pd_xl_file, 'Données & sources')
+            maintainer_df = pd.read_excel(pd_xl_file, 'Equipe', header=None)
+            changes_df = pd.read_excel(pd_xl_file, 'Changelog')
 
             module_cover_file = next((x for x in module_files if x.endswith('cover.png') or x.endswith('cover.jpg')), None)
             if (module_cover_file is None):
@@ -166,9 +183,20 @@ def read_modules(folder) -> list[ConferenceModule]:
                     title=row.iloc[1], 
                     value=row.iloc[2] if not pd.isna(row.iloc[2]) else None, 
                     source=row.iloc[3], 
+                    urls=get_urls_in_str(row.iloc[3]) if row.iloc[3] else [],
                     expiry_date=row.iloc[4].date() if not pd.isna(row.iloc[4]) else None
                 ) for _, row in sources_df.iterrows()],
+                changes=[ModuleChange(
+                    slide_index1=row.iloc[0], 
+                    description=row.iloc[1],
+                    date=row.iloc[2].date() if not pd.isna(row.iloc[2]) else None
+                ) for _, row in changes_df.iterrows()],
                 slides_count=slides_count,
+                maintainer=ModuleMaintainerInfo(
+                    name=maintainer_df[0][1],
+                    contact_email=maintainer_df[1][1],
+                    contact_discord=maintainer_df[2][1],
+                ),
                 is_valid=True,
                 invalid_reason=None,
                 is_hidden=(general_df[1][4] == 'Caché')
@@ -187,7 +215,13 @@ def read_modules(folder) -> list[ConferenceModule]:
                     has_cover_slide=False,
                     messages=[],
                     sources=[],
+                    changes=[],
                     slides_count=0,
+                    maintainer=ModuleMaintainerInfo(
+                        name='Inconnu',
+                        contact_email=None,
+                        contact_discord=None,
+                    ),
                     is_valid=False,
                     invalid_reason=str(e),
                     is_hidden=True

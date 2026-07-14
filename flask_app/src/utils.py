@@ -4,6 +4,7 @@ from inspect import signature
 import time
 from typing import Any
 import math
+from urllib.parse import urlparse
 
 def get_valid_filename(name):
     s = str(name).strip().replace(" ", "_")
@@ -56,3 +57,14 @@ def check_not_blank(value: Any, name: str) -> str:
     if value is None or value == '' or (type(value) is float and math.isnan(value)):
         raise ValueError(f'Le champ {name} est vide')
     return str(value)
+
+def get_urls_in_str(text: str) -> list[str]:
+    words= text.split()
+
+    urls = []
+    for word in words:
+        parsed = urlparse(word)
+        if parsed.scheme and parsed.netloc:
+            urls.append(word)
+
+    return urls
