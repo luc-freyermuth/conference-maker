@@ -55,8 +55,13 @@ def debounce(wait):
 
 def check_not_blank(value: Any, name: str) -> str:
     if value is None or value == '' or (type(value) is float and math.isnan(value)):
-        raise ValueError(f'Le champ {name} est vide')
+        raise ValueError(f'Le champ `{name}` est vide')
     return str(value)
+
+def check_int(value: Any, name: str) -> int:
+    if value is None or (type(value) is not int):
+        raise ValueError(f'Le champ `{name}` n\'est pas un entier valide')
+    return value
 
 def get_urls_in_str(text: str) -> list[str]:
     words= text.split()

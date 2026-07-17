@@ -9,7 +9,7 @@ from datetime import date
 import threading
 from utils import debounce
 import logging
-from utils import check_not_blank, get_urls_in_str
+from utils import check_not_blank, get_urls_in_str, check_int
 from config import get_conference_and_modules_path
 
 @dataclass
@@ -172,7 +172,7 @@ def read_modules(folder) -> list[ConferenceModule]:
                 id=int(module_subfolder[0:4]),
                 title=check_not_blank(general_df[1][0], "Titre"),
                 description=check_not_blank(general_df[1][1], "Description"),
-                duration_minutes=general_df[1][2],
+                duration_minutes=check_int(general_df[1][2], "Durée (minutes)"),
                 img_url=f'/static/modules/{module_subfolder}/{module_cover_file}',
                 slides_path=f'{modules_folder}/{module_subfolder}/{module_slides_file}',
                 tags=[ModuleTag(category, tag) for category in tags_df.columns for tag in tags_df[category].tolist() if isinstance(tag, str)],
