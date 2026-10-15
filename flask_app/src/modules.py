@@ -74,7 +74,7 @@ class ConferenceModulesService:
     def __init__(self, conferences_and_modules_path: str):
         self.modules = read_modules(conferences_and_modules_path)
         self.conferences_and_modules_path = conferences_and_modules_path
-        threading.Thread(target=lambda: self._udpate_modules_regularly()).start()
+        # threading.Thread(target=lambda: self._udpate_modules_regularly()).start()
         
 
     def get_modules(self) -> list[ConferenceModule]: 

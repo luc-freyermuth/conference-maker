@@ -5,12 +5,12 @@ description = "A conference making tools for the Shifters"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aspose-slides>=26.10.0",
     "flask>=3.1.0",
     "numpy>=2.2.5",
     "openpyxl>=3.1.5",
     "pandas>=2.2.3",
     "python-pptx>=1.0.2",
-    "pywin32>=310",
     "sqlalchemy>=2.0.51",
     "waitress>=3.0.2",
     "watchdog>=6.0.0",

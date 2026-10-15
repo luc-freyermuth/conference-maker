@@ -5,13 +5,11 @@ from typing import Tuple, cast
 from flask import render_template, request, send_from_directory, send_file, session
 
 from modules import ConferenceModule, get_all_tags
-from win32_powerpoint_builder import create_conference_slides
+from powerpoint_builder import create_conference_slides
 from assessment_grid_builder import create_assessment_grid
 from config import get_assets_path
 from conference import Conference, serialize_conference, deserialize_conference, ModuleConferencePart, CoverSlideConferencePart, CoverSlideConferencePartImage
 import base64
-import io
-from image_cache import image_cache
 import json
 from flask import send_file
 from io import BytesIO
@@ -385,11 +383,4 @@ def render_oob_toast(message: str) -> str:
 @routes.route('/assets/<path:filename>')
 def custom_static(filename):
     return send_from_directory(get_assets_path(), filename)
-    
-@routes.route('/dynamic-assets/image_cache/<int:cache_id>')
-def dynamic_assets_from_cache(cache_id: int):
-    base64_image = image_cache.get_from_cache(cache_id)
-    b = base64.b64decode(base64_image.encode('utf-8'))
-    buf = io.BytesIO(b)
-    buf.seek(0)
-    return send_file(buf, mimetype="image/png")
+
